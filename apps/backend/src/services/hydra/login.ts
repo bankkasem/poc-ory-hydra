@@ -1,14 +1,10 @@
 import { z } from "zod";
+import { hydraAdminUrl } from "./admin";
 
 const acceptLoginResponseSchema = z.object({ redirect_to: z.string().url() });
 
 export async function acceptLogin(loginChallenge: string, subject: string) {
-  if (!Bun.env.HYDRA_ADMIN_URL) throw new Error("HYDRA_ADMIN_URL is required");
-
-  const url = new URL(
-    "/admin/oauth2/auth/requests/login/accept",
-    Bun.env.HYDRA_ADMIN_URL,
-  );
+  const url = hydraAdminUrl("/admin/oauth2/auth/requests/login/accept");
   url.searchParams.set("login_challenge", loginChallenge);
 
   const response = await fetch(url, {

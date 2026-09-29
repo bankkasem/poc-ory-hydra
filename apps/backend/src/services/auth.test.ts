@@ -1,12 +1,12 @@
 import { expect, test } from "bun:test";
-import { parseLoginRequest, verifyCode } from "./authenticate";
+import { loginRequestSchema } from "../routes/auth.schemas";
 
 const seedHash =
   "$argon2id$v=19$m=65536,t=2,p=1$B0OUKNzc/dDv9U6C7pdgQerpvC5jkNyWq794cR2a/I8$wzFaVFrCoVTk/5OqLvdbmlpxYGU+NBZhGCsUiImZzmI";
 
 test("validates login credentials and verifies the stored hash", async () => {
   expect(
-    parseLoginRequest({
+    loginRequestSchema.parse({
       loginChallenge: "login-challenge",
       phoneNumber: "0812345678",
       verificationCode: "123456",
@@ -17,12 +17,12 @@ test("validates login credentials and verifies the stored hash", async () => {
     verificationCode: "123456",
   });
   expect(
-    parseLoginRequest({
+    loginRequestSchema.safeParse({
       loginChallenge: "login-challenge",
       phoneNumber: "0812345678",
       verificationCode: "12345",
-    }),
-  ).toBeNull();
-  expect(await verifyCode("123456", seedHash)).toBe(true);
-  expect(await verifyCode("000000", seedHash)).toBe(false);
+    }).success,
+  ).toBe(false);
+  expect(await Bun.password.verify("123456", seedHash)).toBe(true);
+  expect(await Bun.password.verify("000000", seedHash)).toBe(false);
 });

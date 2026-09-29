@@ -109,19 +109,3 @@ Authorization: Bearer <access-token>
 ### 12. Backend ตรวจ Access Token
 
 Backend introspect token กับ Hydra หาก token ยังใช้งานได้ Hydra จะคืน OAuth subject ซึ่งตรงกับ user ID จากขั้น Accept Login จากนั้น backend โหลดข้อมูล user จาก MySQL และส่งกลับ frontend
-
-## สถานะปัจจุบัน
-
-ทำแล้ว:
-
-- ตรวจ login request ด้วย Zod
-- ตรวจเบอร์โทรและรหัสหกหลักกับ MySQL
-- Accept Hydra `login_challenge`
-- รับ `redirect_to` จาก Hydra
-
-ยังเหลือ:
-
-- Backend consent flow
-- Backend `/me` และ token introspection
-- หน้า Login, Consent และ Callback ใน frontend
-- PKCE และ token exchange ใน frontend
