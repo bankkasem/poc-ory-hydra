@@ -1,0 +1,19 @@
+version: "3"
+
+tasks:
+  setup:
+    desc: Install dependencies and start the local stack
+    cmds:
+      - test -f apps/backend/.env.local || cp apps/backend/.env.example apps/backend/.env.local
+      - test -f apps/frontend/.env.local || cp apps/frontend/.env.example apps/frontend/.env.local
+      - bun install
+      - docker compose up -d --wait
+      - curl --retry 30 --retry-connrefused --retry-delay 1 --fail --silent --show-error http://127.0.0.1:4445/health/ready
+      - bun run setup
+
+  setup:fresh:
+    desc: Rebuild the local stack from empty Docker volumes
+    prompt: This deletes the local MySQL and Hydra data. Continue?
+    cmds:
+      - docker compose down --volumes
+      - task: setup
