@@ -11,6 +11,7 @@ Minimal Bun monorepo for learning how an existing application integrates with Or
 
 ```bash
 bun install
+cp apps/backend/.env.example apps/backend/.env.local
 docker compose up -d
 bun run dev
 ```
@@ -20,6 +21,14 @@ Frontend runs on <http://localhost:3000> and backend health check on <http://loc
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
 The local seed user is `0812345678` with verification code `123456`. The code is stored as an Argon2id hash, not plaintext.
+
+Verify the seed credentials through the backend:
+
+```bash
+curl -X POST http://localhost:3001/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"phoneNumber":"0812345678","verificationCode":"123456"}'
+```
 
 MySQL runs `docker/mysql/init.sql` only when its data volume is first created. Hydra creates and updates its own tables through the `hydra-migrate` service each time the stack starts.
 
