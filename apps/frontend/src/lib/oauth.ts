@@ -23,7 +23,6 @@ function oauthConfig() {
 export const oauthStorage = {
   verifier: "oauth.pkce_verifier",
   state: "oauth.state",
-  accessToken: "oauth.access_token",
 } as const;
 
 function base64Url(bytes: Uint8Array) {
@@ -71,7 +70,7 @@ export async function beginAuthorization() {
 export async function exchangeCode(code: string) {
   const config = oauthConfig();
   const verifier = sessionStorage.getItem(oauthStorage.verifier);
-  if (!verifier) throw new Error("ไม่พบ PKCE verifier กรุณาเริ่ม Login ใหม่");
+  if (!verifier) throw new Error("ไม่พบข้อมูลการเข้าสู่ระบบ กรุณาเริ่มใหม่");
 
   const response = await fetch(`${config.hydraPublicUrl}/oauth2/token`, {
     method: "POST",
@@ -85,17 +84,17 @@ export async function exchangeCode(code: string) {
     }),
   });
   const data: unknown = await response.json();
-  if (!response.ok) throw new Error("Hydra ไม่สามารถแลก authorization code ได้");
+  if (
+    !response.ok ||
+    typeof data !== "object" ||
+    data === null ||
+    !("access_token" in data) ||
+    typeof data.access_token !== "string"
+  ) {
+    throw new Error("ไม่สามารถเข้าสู่ระบบได้");
+  }
 
   sessionStorage.removeItem(oauthStorage.verifier);
   sessionStorage.removeItem(oauthStorage.state);
-  if (
-    typeof data === "object" &&
-    data !== null &&
-    "access_token" in data &&
-    typeof data.access_token === "string"
-  ) {
-    sessionStorage.setItem(oauthStorage.accessToken, data.access_token);
-  }
-  return data;
+  return data.access_token;
 }

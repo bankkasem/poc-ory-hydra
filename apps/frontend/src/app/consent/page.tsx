@@ -8,8 +8,13 @@ type ConsentPageProps = {
 };
 
 type Consent = {
-  client: { id: string; name: string };
+  client: { name: string };
   requestedScopes: string[];
+};
+
+const scopeLabels: Record<string, string> = {
+  openid: "ยืนยันตัวตน",
+  profile: "ข้อมูลโปรไฟล์",
 };
 
 export default function ConsentPage({ searchParams }: ConsentPageProps) {
@@ -28,7 +33,7 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
     )
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok) throw new Error("ไม่สามารถอ่าน consent request ได้");
+        if (!response.ok) throw new Error("ไม่สามารถโหลดคำขอได้");
         setConsent(data);
       })
       .catch((cause) =>
@@ -50,7 +55,7 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
       });
       const data = await response.json();
       if (!response.ok || typeof data.redirectTo !== "string") {
-        throw new Error("ไม่สามารถอนุญาต scopes ได้");
+        throw new Error("ไม่สามารถอนุญาตได้");
       }
       window.location.assign(data.redirectTo);
     } catch (cause) {
@@ -62,28 +67,23 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
   }
 
   return (
-    <FlowShell
-      step="ขั้นที่ 2 · Consent"
-      title="อนุญาตการเข้าถึง"
-      description="ตรวจสอบว่า OAuth client ขอสิทธิ์อะไร ก่อนอนุญาตให้ Hydra ออก authorization code"
-    >
+    <FlowShell title="อนุญาตการเข้าถึง">
       {!consentChallenge ? (
         <p className="error" role="alert">
-          ไม่พบ consent challenge กรุณาเริ่ม Login ใหม่
+          คำขอไม่ถูกต้อง กรุณาเริ่มใหม่
         </p>
       ) : null}
       {consent ? (
         <div className="form-stack">
-          <div className="client-summary">
-            <span>OAuth client</span>
+          <div className="summary">
+            <span>แอปพลิเคชัน</span>
             <strong>{consent.client.name}</strong>
-            <small>{consent.client.id}</small>
           </div>
           <div>
-            <p className="field-title">Scopes ที่ร้องขอ</p>
+            <p className="field-title">สิทธิ์ที่ขอ</p>
             <ul className="scope-list">
               {consent.requestedScopes.map((scope) => (
-                <li key={scope}>{scope}</li>
+                <li key={scope}>{scopeLabels[scope] ?? scope}</li>
               ))}
             </ul>
           </div>
@@ -98,12 +98,12 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
             onClick={allowAccess}
             disabled={submitting}
           >
-            {submitting ? "กำลังอนุญาต…" : "อนุญาตและไปต่อ"}
+            {submitting ? "กำลังดำเนินการ…" : "อนุญาต"}
           </button>
         </div>
       ) : consentChallenge && !error ? (
         <p className="loading" role="status">
-          กำลังอ่าน consent request…
+          กำลังโหลด…
         </p>
       ) : null}
       {error && !consent ? (

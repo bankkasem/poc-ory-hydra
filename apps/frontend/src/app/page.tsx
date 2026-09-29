@@ -13,32 +13,14 @@ export default function Home() {
   }
 
   return (
-    <FlowShell
-      step="เริ่มต้น"
-      title="ทดลอง OAuth แบบเห็นทุกขั้น"
-      description="Frontend จะสร้าง PKCE แล้วพาคุณผ่าน Hydra, ระบบยืนยันตัวตนเดิม และกลับมารับ token ที่หน้านี้"
-    >
-      <ol className="flow-list">
-        <li>
-          <strong>1</strong> สร้าง PKCE ใน browser
-        </li>
-        <li>
-          <strong>2</strong> ยืนยันเบอร์โทรและรหัสหกหลัก
-        </li>
-        <li>
-          <strong>3</strong> อนุญาต scopes ให้ OAuth client
-        </li>
-        <li>
-          <strong>4</strong> แลก authorization code เป็น token
-        </li>
-      </ol>
+    <FlowShell title="เข้าสู่ระบบ">
       <button
         type="button"
         className="primary-button"
         onClick={startLogin}
         disabled={starting}
       >
-        {starting ? "กำลังเริ่ม OAuth…" : "เริ่ม Login"}
+        {starting ? "กำลังดำเนินการ…" : "เข้าสู่ระบบ"}
       </button>
     </FlowShell>
   );

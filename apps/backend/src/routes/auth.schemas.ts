@@ -15,3 +15,8 @@ export const loginRequestSchema = z.object({
 export const consentRequestSchema = z.object({
   consentChallenge: z.string().trim().min(1),
 });
+
+export const bearerTokenSchema = z
+  .string()
+  .regex(/^Bearer \S+$/i)
+  .transform((value) => value.slice(value.indexOf(" ") + 1));

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hydra OAuth Lab",
-  description: "OAuth 2.0 and OpenID Connect integration POC",
+  title: "เข้าสู่ระบบ",
+  description: "ระบบยืนยันตัวตน",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

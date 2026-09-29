@@ -1,7 +1,20 @@
 import { authenticateUser } from "../services/auth";
+import { findUserById } from "../services/database/users";
 import { acceptConsent, getConsentRequest } from "../services/hydra/consent";
 import { acceptLogin } from "../services/hydra/login";
-import { consentRequestSchema, loginRequestSchema } from "./auth.schemas";
+import { introspectAccessToken } from "../services/hydra/token";
+import {
+  bearerTokenSchema,
+  consentRequestSchema,
+  loginRequestSchema,
+} from "./auth.schemas";
+
+function unauthorized() {
+  return Response.json(
+    { error: "Unauthorized" },
+    { status: 401, headers: { "WWW-Authenticate": "Bearer" } },
+  );
+}
 
 export const authRoutes = {
   "/auth/login": {
@@ -55,6 +68,20 @@ export const authRoutes = {
 
       const redirectTo = await acceptConsent(input.data.consentChallenge);
       return Response.json({ redirectTo });
+    },
+  },
+  "/me": {
+    GET: async (request: Request) => {
+      const token = bearerTokenSchema.safeParse(
+        request.headers.get("Authorization"),
+      );
+      if (!token.success) return unauthorized();
+
+      const subject = await introspectAccessToken(token.data);
+      if (!subject) return unauthorized();
+
+      const user = await findUserById(subject);
+      return user ? Response.json(user) : unauthorized();
     },
   },
 };

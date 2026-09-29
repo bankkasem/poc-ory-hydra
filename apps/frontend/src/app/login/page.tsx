@@ -46,11 +46,7 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <FlowShell
-      step="ขั้นที่ 1 · Login"
-      title="ยืนยันว่าเป็นคุณ"
-      description="ข้อมูลนี้ส่งไปยัง backend เดิมเท่านั้น Hydra จะไม่เห็นเบอร์โทรหรือรหัสยืนยันของคุณ"
-    >
+    <FlowShell title="ยืนยันตัวตน">
       {loginChallenge ? (
         <form action={login} className="form-stack">
           <label>
@@ -89,11 +85,10 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           >
             {submitting ? "กำลังตรวจสอบ…" : "ยืนยันตัวตน"}
           </button>
-          <p className="hint">ข้อมูลตัวอย่างถูกใส่ไว้ให้สำหรับ POC นี้</p>
         </form>
       ) : (
         <p className="error" role="alert">
-          ไม่พบ login challenge กรุณาเริ่ม Login ใหม่
+          คำขอเข้าสู่ระบบไม่ถูกต้อง กรุณาเริ่มใหม่
         </p>
       )}
     </FlowShell>

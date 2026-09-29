@@ -109,3 +109,5 @@ Authorization: Bearer <access-token>
 ### 12. Backend ตรวจ Access Token
 
 Backend introspect token กับ Hydra หาก token ยังใช้งานได้ Hydra จะคืน OAuth subject ซึ่งตรงกับ user ID จากขั้น Accept Login จากนั้น backend โหลดข้อมูล user จาก MySQL และส่งกลับ frontend
+
+Frontend จะไม่เรียก Hydra Admin API โดยตรง และระบบจริงไม่ควรเปิด introspection endpoint ให้ browser หรือ public internet เข้าถึง
