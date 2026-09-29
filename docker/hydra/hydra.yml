@@ -1,0 +1,33 @@
+serve:
+  cookies:
+    same_site_mode: Lax
+  public:
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:3000
+      allowed_methods:
+        - GET
+        - POST
+        - OPTIONS
+      allowed_headers:
+        - Authorization
+        - Content-Type
+
+urls:
+  self:
+    issuer: http://localhost:4444
+  login: http://localhost:3000/login
+  consent: http://localhost:3000/consent
+
+secrets:
+  system:
+    - local-development-system-secret-change-me
+
+strategies:
+  access_token: opaque
+
+oidc:
+  subject_identifiers:
+    supported_types:
+      - public

@@ -1,0 +1,21 @@
+sequenceDiagram
+    autonumber
+    participant Frontend as Frontend<br/>(Public Client)
+    participant Hydra as Ory Hydra
+    participant Attacker
+
+    Frontend->>Frontend: Generate random code_verifier
+    Frontend->>Frontend: Create code_challenge<br/>BASE64URL(SHA256(code_verifier))
+    Note over Frontend: Keep code_verifier in the client
+
+    Frontend->>Hydra: Authorization request<br/>code_challenge + method S256
+    Hydra-->>Frontend: Authorization code
+
+    Attacker->>Hydra: Exchange stolen code<br/>without code_verifier
+    Hydra-->>Attacker: Reject token request
+
+    Frontend->>Hydra: Exchange code + code_verifier
+    Hydra->>Hydra: Verify code_verifier<br/>matches code_challenge
+    Hydra-->>Frontend: Access token + ID token
+
+    Note over Frontend,Hydra: A stolen authorization code is unusable without the original code_verifier

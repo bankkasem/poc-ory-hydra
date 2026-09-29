@@ -1,0 +1,21 @@
+{
+  "name": "poc-ory-hydra",
+  "private": true,
+  "packageManager": "bun@1.3.5",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun run --workspaces --if-present dev",
+    "build": "bun run --workspaces --if-present build",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  },
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14"
+  }
+}
