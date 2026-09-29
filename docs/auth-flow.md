@@ -78,7 +78,7 @@ Login และ consent มีหน้าที่ต่างกัน:
 
 ### 8. Backend Accept Consent
 
-Frontend ส่ง scope ที่ผู้ใช้อนุญาตพร้อม `consent_challenge` ไป backend จากนั้น backend แจ้ง Hydra ว่าอนุญาต scope ใดบ้าง
+Frontend ส่ง `consent_challenge` ไป backend จากนั้น backend อ่าน requested scopes จาก Hydra และ accept scopes ชุดนั้นกลับไป โดยไม่เชื่อ scopes ที่ browser ส่งมาเอง
 
 ### 9. Hydra ออก Authorization Code
 

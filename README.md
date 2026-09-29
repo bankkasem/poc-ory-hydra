@@ -12,6 +12,7 @@ Minimal Bun monorepo for learning how an existing application integrates with Or
 ```bash
 bun install
 cp apps/backend/.env.example apps/backend/.env.local
+cp apps/frontend/.env.example apps/frontend/.env.local
 docker compose up -d
 bun run dev
 ```
