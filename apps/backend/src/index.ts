@@ -1,4 +1,5 @@
-import { authenticateUser, parseLoginInput } from "./auth/authenticate";
+import { authenticateUser, parseLoginRequest } from "./auth/authenticate";
+import { acceptLogin } from "./hydra/login";
 
 const port = Number(Bun.env.PORT ?? 3001);
 
@@ -8,7 +9,7 @@ Bun.serve({
     "/health": Response.json({ status: "ok" }),
     "/auth/login": {
       POST: async (request) => {
-        const input = parseLoginInput(await request.json().catch(() => null));
+        const input = parseLoginRequest(await request.json().catch(() => null));
         if (!input)
           return Response.json(
             { error: "Invalid request body" },
@@ -22,7 +23,9 @@ Bun.serve({
             { status: 401 },
           );
         }
-        return Response.json({ user });
+
+        const redirectTo = await acceptLogin(input.loginChallenge, user.id);
+        return Response.json({ redirectTo });
       },
     },
   },

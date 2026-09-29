@@ -20,6 +20,21 @@ Frontend runs on <http://localhost:3000> and backend health check on <http://loc
 
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
+Create the public OAuth client once after starting Docker:
+
+```bash
+docker compose exec hydra hydra create oauth2-client \
+  --endpoint http://127.0.0.1:4445 \
+  --id poc-frontend \
+  --name "POC Frontend" \
+  --grant-type authorization_code \
+  --response-type code \
+  --scope openid,profile \
+  --redirect-uri http://localhost:3000/callback \
+  --allowed-cors-origin http://localhost:3000 \
+  --token-endpoint-auth-method none
+```
+
 The local seed user is `0812345678` with verification code `123456`. The code is stored as an Argon2id hash, not plaintext.
 
 Verify the seed credentials through the backend:
@@ -27,7 +42,7 @@ Verify the seed credentials through the backend:
 ```bash
 curl -X POST http://localhost:3001/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"phoneNumber":"0812345678","verificationCode":"123456"}'
+  -d '{"loginChallenge":"from-hydra","phoneNumber":"0812345678","verificationCode":"123456"}'
 ```
 
 MySQL runs `docker/mysql/init.sql` only when its data volume is first created. Hydra creates and updates its own tables through the `hydra-migrate` service each time the stack starts.

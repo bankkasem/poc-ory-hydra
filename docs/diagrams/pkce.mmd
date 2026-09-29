@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    participant Frontend as Frontend<br/>(Public OAuth Client)
+    participant Hydra as Ory Hydra
+    participant Attacker as ผู้โจมตี
+
+    Note over Frontend: เตรียมกุญแจสำหรับ OAuth flow รอบนี้
+    Frontend->>Frontend: สร้าง code_verifier แบบสุ่ม
+    Frontend->>Frontend: สร้าง code_challenge<br/>BASE64URL(SHA256(code_verifier))
+    Note over Frontend: เก็บ code_verifier ไว้ใน Frontend<br/>และไม่ส่งไปตอนเริ่ม flow
+
+    Frontend->>Hydra: ขอเริ่ม OAuth<br/>code_challenge + method S256
+    Hydra-->>Frontend: Authorization Code<br/>หลัง Login และ Consent สำเร็จ
+
+    Note over Attacker,Hydra: กรณี Authorization Code ถูกขโมย
+    Attacker->>Hydra: ขอแลก Code<br/>แต่ไม่มี code_verifier
+    Hydra-->>Attacker: ปฏิเสธคำขอ
+
+    Note over Frontend,Hydra: เจ้าของ flow แลก Code
+    Frontend->>Hydra: Authorization Code + code_verifier
+    Hydra->>Hydra: ตรวจว่า code_verifier<br/>ตรงกับ code_challenge
+    Hydra-->>Frontend: Access Token + ID Token
+
+    Note over Frontend,Hydra: Code ที่ถูกขโมยจะใช้ไม่ได้<br/>หากไม่มี code_verifier ตัวเดิม
