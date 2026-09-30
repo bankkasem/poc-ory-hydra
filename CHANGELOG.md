@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-30
+
 ### Added
 
 - เพิ่ม Main App และ Member App เป็น OAuth clients แยกกัน
@@ -40,6 +42,7 @@
 - เพิ่ม Taskfile สำหรับติดตั้งและเริ่มระบบ local
 - เพิ่มเอกสาร Authentication flow และ PKCE
 
-[Unreleased]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bankkasem/poc-ory-hydra/releases/tag/v0.1.0
