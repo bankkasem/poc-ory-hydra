@@ -100,24 +100,27 @@ http://localhost:3002/callback?code=...&state=...
 
 Authorization code มีอายุสั้นและใช้ได้ครั้งเดียว
 
-### 10. OAuth client แลก Code เป็น Token
+### 10. BFF แลก Code เป็น Token
 
-Main App หรือ Member App ส่ง authorization code และ `code_verifier` ไป Hydra หาก verifier ตรงกับ challenge ที่ส่งไว้ตอนเริ่ม flow Hydra จะออก:
+Callback ของ Main App หรือ Member App ส่ง authorization code และ `code_verifier` ไป Backend จากนั้น Backend แลก Code กับ Hydra หาก verifier ตรงกับ challenge ที่ส่งไว้ตอนเริ่ม flow Hydra จะออก:
 
 - **ID token** บอก OAuth client ว่าผู้ใช้คือใคร
 - **Access token** ใช้เรียก protected backend API
+- **Refresh token** ใช้ขอ Access Token ชุดใหม่โดยไม่ต้อง Login ซ้ำ
 
-### 11. OAuth client เรียก Protected API
+Backend เก็บ Token ทั้งหมดไว้ใน App Session ที่ MySQL และคืนเฉพาะ Session ID ให้ BFF จากนั้น BFF เก็บ Session ID ใน `HttpOnly` cookie ซึ่ง browser JavaScript อ่านไม่ได้
 
-OAuth client เรียก backend พร้อม access token:
+### 11. BFF เรียก Protected API
+
+BFF อ่าน Session ID จาก cookie แล้วเรียก Backend:
 
 ```http
-GET /me
-Authorization: Bearer <access-token>
+GET /auth/oauth/session
+Authorization: Session <session-id>
 ```
 
 ### 12. Backend ตรวจ Access Token
 
-Backend introspect token กับ Hydra หาก token ยังใช้งานได้ Hydra จะคืน OAuth subject ซึ่งตรงกับ user ID จากขั้น Accept Login จากนั้น backend โหลดข้อมูล user จาก MySQL และส่งกลับ OAuth client
+Backend โหลด Token จาก App Session หาก Access Token หมดอายุจะใช้ Refresh Token ขอ Token ชุดใหม่และแทนที่ Refresh Token เดิมที่ถูกหมุน จากนั้นจึง introspect Access Token กับ Hydra โหลดข้อมูล user จาก MySQL และส่งกลับ BFF
 
 Auth App จะไม่เรียก Hydra Admin API โดยตรง และระบบจริงไม่ควรเปิด introspection endpoint ให้ browser หรือ public internet เข้าถึง

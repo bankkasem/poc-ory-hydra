@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- เพิ่ม Refresh Token และรองรับ token rotation ของ Hydra
+- เพิ่ม App Session ที่เก็บ Access Token และ Refresh Token ใน MySQL
+- เพิ่ม HttpOnly session cookie สำหรับ Main App และ Member App
+
+### Changed
+
+- ย้าย OAuth callback และการตรวจ session ไปทำฝั่ง Next.js BFF
+- Redirect ก่อน render หน้าเมื่อมี Hydra Login Session เพื่อลดหน้ากระพิบ
+
 ## [0.3.0] - 2026-09-30
 
 ### Added

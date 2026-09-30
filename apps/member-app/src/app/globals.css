@@ -3,7 +3,6 @@
   --muted: #686864;
   --line: #deded8;
   --paper: #f7f7f5;
-  --danger: #b42318;
 }
 
 * {
@@ -80,24 +79,6 @@ dt {
 dd {
   margin: 0;
   font-weight: 600;
-}
-
-.centered {
-  display: grid;
-  place-items: center;
-}
-
-.loading,
-.error {
-  margin: 3rem 0 0;
-}
-
-.loading {
-  color: var(--muted);
-}
-
-.error {
-  color: var(--danger);
 }
 
 @media (max-width: 36rem) {

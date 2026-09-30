@@ -6,5 +6,6 @@
 
 - [Authentication flow](./diagrams/auth-flow.mmd) — ลำดับตั้งแต่ Login จนเรียก Protected API
 - [Multi-app authentication flow](./diagrams/multi-app-auth-flow.mmd) — เข้า Main App แล้วเปิด Member App ผ่าน SSO
+- [Refresh token flow](./diagrams/refresh-token-flow.mmd) — App Session, HttpOnly Cookie และการต่ออายุ Access Token
 - [Two-app authentication flow](./diagrams/two-app-auth-flow.mmd) — เข้า New App แล้วใช้ Auth App สำหรับ Login และ Consent
 - [PKCE](./diagrams/pkce.mmd) — วิธีป้องกัน Authorization Code ที่ถูกขโมย

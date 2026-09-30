@@ -19,3 +19,11 @@ _Avoid_: Member Module, Member Page
 **Hydra Login Session**:
 สถานะที่ Hydra จำว่าผู้ใช้ใน browser นี้ยืนยันตัวตนแล้วและใช้ร่วมกันระหว่าง OAuth clients
 _Avoid_: App Session, Access Token
+
+**App Session**:
+สถานะการเข้าใช้งานที่ OAuth client แต่ละแอปเป็นเจ้าของและไม่แชร์กับแอปอื่น
+_Avoid_: Hydra Login Session, Token
+
+**Refresh Token**:
+สิทธิ์ของ OAuth client สำหรับขอ Access Token ชุดใหม่โดยไม่ให้ผู้ใช้ Login ซ้ำ
+_Avoid_: App Session, Hydra Login Session

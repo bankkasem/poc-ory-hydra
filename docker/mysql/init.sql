@@ -11,6 +11,17 @@ CREATE TABLE IF NOT EXISTS app_db.users (
   UNIQUE KEY users_phone_number_uq (phone_number)
 );
 
+CREATE TABLE IF NOT EXISTS app_db.oauth_sessions (
+  id CHAR(36) NOT NULL,
+  client_id VARCHAR(255) NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  access_token_expires_at DATETIME(3) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
 INSERT IGNORE INTO app_db.users (id, phone_number, verification_code_hash)
 VALUES (
   '00000000-0000-4000-8000-000000000001',

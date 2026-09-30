@@ -1,6 +1,6 @@
 const adminUrl = Bun.env.HYDRA_ADMIN_URL;
-const clientId = Bun.env.NEXT_PUBLIC_OAUTH_CLIENT_ID;
-const redirectUri = Bun.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
+const clientId = Bun.env.OAUTH_CLIENT_ID;
+const redirectUri = Bun.env.OAUTH_REDIRECT_URI;
 
 if (!adminUrl || !clientId || !redirectUri) {
   throw new Error("Hydra admin URL and OAuth client settings are required");
@@ -9,9 +9,9 @@ if (!adminUrl || !clientId || !redirectUri) {
 const client = {
   client_id: clientId,
   client_name: Bun.env.OAUTH_CLIENT_NAME ?? clientId,
-  grant_types: ["authorization_code"],
+  grant_types: ["authorization_code", "refresh_token"],
   response_types: ["code"],
-  scope: "openid profile",
+  scope: "openid profile offline_access",
   redirect_uris: [redirectUri],
   allowed_cors_origins: [new URL(redirectUri).origin],
   token_endpoint_auth_method: "none",

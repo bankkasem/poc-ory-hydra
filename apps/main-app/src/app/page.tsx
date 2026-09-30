@@ -1,65 +1,40 @@
-"use client";
-
-import { beginAuthorization, oauthStorage } from "@poc/oauth-client";
-import { useEffect, useRef, useState } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { authConfig } from "@/lib/auth";
 
 type User = { phoneNumber: string };
 
-export default function Home() {
-  const started = useRef(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState("");
+async function getUser() {
+  const config = authConfig();
+  const sessionId = (await cookies()).get(config.cookies.session)?.value;
+  if (!sessionId) redirect("/login");
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
+  const response = await fetch(`${config.backendUrl}/auth/oauth/session`, {
+    headers: { Authorization: `Session ${sessionId}` },
+    cache: "no-store",
+  });
+  if (response.status === 401) redirect("/login");
+  if (!response.ok) throw new Error("Unable to load session");
+  return (await response.json()) as User;
+}
 
-    async function loadUser() {
-      const accessToken = sessionStorage.getItem(oauthStorage.accessToken);
-      if (!accessToken) return beginAuthorization();
-
-      const response = await fetch("/api/backend/me", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (response.status === 401) {
-        sessionStorage.removeItem(oauthStorage.accessToken);
-        return beginAuthorization();
-      }
-      if (!response.ok) throw new Error("ไม่สามารถโหลดข้อมูลบัญชีได้");
-      setUser(await response.json());
-    }
-
-    loadUser().catch((cause) =>
-      setError(cause instanceof Error ? cause.message : "ไม่สามารถเข้าสู่ระบบได้"),
-    );
-  }, []);
+export default async function Home() {
+  const user = await getUser();
 
   return (
     <main>
       <header>
         <span className="brand">Main</span>
-        {user ? (
-          <a href={process.env.NEXT_PUBLIC_MEMBER_APP_URL}>จัดการสมาชิก</a>
-        ) : null}
+        <a href={process.env.MEMBER_APP_URL}>จัดการสมาชิก</a>
       </header>
       <section>
         <h1>หน้าหลัก</h1>
-        {error ? (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        ) : user ? (
-          <dl>
-            <div>
-              <dt>ผู้ใช้งาน</dt>
-              <dd>{user.phoneNumber}</dd>
-            </div>
-          </dl>
-        ) : (
-          <p className="loading" role="status">
-            กำลังเข้าสู่ระบบ…
-          </p>
-        )}
+        <dl>
+          <div>
+            <dt>ผู้ใช้งาน</dt>
+            <dd>{user.phoneNumber}</dd>
+          </div>
+        </dl>
       </section>
     </main>
   );

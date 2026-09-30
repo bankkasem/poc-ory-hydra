@@ -22,6 +22,8 @@ Hydra exposes its public API on <http://localhost:4444> and admin API on <http:/
 
 `task setup` creates or updates the Main App and Member App public OAuth clients and is safe to run again after changing their local configuration.
 
+Main App and Member App keep only an opaque App Session ID in an `HttpOnly` cookie. Access and refresh tokens stay in MySQL and are refreshed by the backend.
+
 Run `task setup:fresh` to verify setup from empty Docker volumes. It asks for confirmation before deleting local MySQL and Hydra data.
 
 The local seed user is `0812345678` with verification code `123456`. The code is stored as an Argon2id hash, not plaintext.
