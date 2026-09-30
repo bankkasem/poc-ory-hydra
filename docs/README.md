@@ -5,4 +5,5 @@
 ## Diagrams
 
 - [Authentication flow](./diagrams/auth-flow.mmd) — ลำดับตั้งแต่ Login จนเรียก Protected API
+- [Two-app authentication flow](./diagrams/two-app-auth-flow.mmd) — เข้า New App แล้วใช้ Auth App สำหรับ Login และ Consent
 - [PKCE](./diagrams/pkce.mmd) — วิธีป้องกัน Authorization Code ที่ถูกขโมย
