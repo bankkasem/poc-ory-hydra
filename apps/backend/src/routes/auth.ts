@@ -1,11 +1,12 @@
 import { authenticateUser } from "../services/auth";
 import { findUserById } from "../services/database/users";
 import { acceptConsent, getConsentRequest } from "../services/hydra/consent";
-import { acceptLogin } from "../services/hydra/login";
+import { acceptLogin, getLoginRequest } from "../services/hydra/login";
 import { introspectAccessToken } from "../services/hydra/token";
 import {
   bearerTokenSchema,
   consentRequestSchema,
+  loginChallengeSchema,
   loginRequestSchema,
 } from "./auth.schemas";
 
@@ -17,6 +18,27 @@ function unauthorized() {
 }
 
 export const authRoutes = {
+  "/auth/login/session": {
+    POST: async (request: Request) => {
+      const input = loginChallengeSchema.safeParse(
+        await request.json().catch(() => null),
+      );
+      if (!input.success)
+        return Response.json(
+          { error: "Invalid login challenge" },
+          { status: 400 },
+        );
+
+      const login = await getLoginRequest(input.data.loginChallenge);
+      if (!login.skip || !login.subject) return Response.json({ skip: false });
+
+      const redirectTo = await acceptLogin(
+        input.data.loginChallenge,
+        login.subject,
+      );
+      return Response.json({ skip: true, redirectTo });
+    },
+  },
   "/auth/login": {
     POST: async (request: Request) => {
       const input = loginRequestSchema.safeParse(

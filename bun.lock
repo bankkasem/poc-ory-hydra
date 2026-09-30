@@ -21,6 +21,7 @@
       "name": "@poc/frontend",
       "version": "0.1.0",
       "dependencies": {
+        "@poc/oauth-client": "workspace:*",
         "next": "16.3.6",
         "react": "19.2.8",
         "react-dom": "19.2.8",
@@ -32,6 +33,25 @@
         "agent-browser": "0.38.1",
         "typescript": "^5",
       },
+    },
+    "apps/new-app": {
+      "name": "@poc/new-app",
+      "version": "0.2.0",
+      "dependencies": {
+        "@poc/oauth-client": "workspace:*",
+        "next": "16.3.6",
+        "react": "19.2.8",
+        "react-dom": "19.2.8",
+      },
+      "devDependencies": {
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "typescript": "^5",
+      },
+    },
+    "packages/oauth-client": {
+      "name": "@poc/oauth-client",
     },
   },
   "trustedDependencies": [
@@ -133,6 +153,10 @@
     "@poc/backend": ["@poc/backend@workspace:apps/backend"],
 
     "@poc/frontend": ["@poc/frontend@workspace:apps/frontend"],
+
+    "@poc/new-app": ["@poc/new-app@workspace:apps/new-app"],
+
+    "@poc/oauth-client": ["@poc/oauth-client@workspace:packages/oauth-client"],
 
     "@swc/helpers": ["@swc/helpers@0.5.23", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw=="],
 

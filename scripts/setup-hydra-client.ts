@@ -3,12 +3,12 @@ const clientId = Bun.env.NEXT_PUBLIC_OAUTH_CLIENT_ID;
 const redirectUri = Bun.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
 
 if (!adminUrl || !clientId || !redirectUri) {
-  throw new Error("Hydra admin URL and frontend OAuth settings are required");
+  throw new Error("Hydra admin URL and OAuth client settings are required");
 }
 
 const client = {
   client_id: clientId,
-  client_name: "POC Frontend",
+  client_name: Bun.env.OAUTH_CLIENT_NAME ?? clientId,
   grant_types: ["authorization_code"],
   response_types: ["code"],
   scope: "openid profile",
@@ -20,7 +20,9 @@ const client = {
 const clientUrl = new URL(`/admin/clients/${clientId}`, adminUrl);
 const existing = await fetch(clientUrl);
 if (!existing.ok && existing.status !== 404) {
-  throw new Error(`Unable to read OAuth client: ${existing.status}`);
+  throw new Error(
+    `Unable to read OAuth client ${clientId}: ${existing.status}`,
+  );
 }
 
 const response = await fetch(
@@ -33,7 +35,9 @@ const response = await fetch(
 );
 
 if (!response.ok) {
-  throw new Error(`Unable to configure OAuth client: ${response.status}`);
+  throw new Error(
+    `Unable to configure OAuth client ${clientId}: ${response.status}`,
+  );
 }
 
 console.log(`OAuth client ${clientId} is ready`);

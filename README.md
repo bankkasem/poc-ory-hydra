@@ -4,7 +4,8 @@ Minimal Bun monorepo for learning how an existing application integrates with Or
 
 ## Apps
 
-- `apps/frontend` — Next.js frontend
+- `apps/frontend` — login, consent, and the first OAuth client
+- `apps/new-app` — protected Next.js application and second OAuth client
 - `apps/backend` — Bun HTTP API
 
 ## Development
@@ -14,11 +15,11 @@ task setup
 bun run dev
 ```
 
-Frontend runs on <http://localhost:3000> and backend health check on <http://localhost:3001/health>.
+The original frontend runs on <http://localhost:3000>, New App runs on <http://localhost:3002>, and the backend health check is available on <http://localhost:3001/health>.
 
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
-`task setup` creates or updates the public OAuth client and is safe to run again after changing its local configuration.
+`task setup` creates or updates both public OAuth clients and is safe to run again after changing their local configuration.
 
 Run `task setup:fresh` to verify setup from empty Docker volumes. It asks for confirmation before deleting local MySQL and Hydra data.
 

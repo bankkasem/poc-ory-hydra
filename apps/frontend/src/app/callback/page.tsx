@@ -1,8 +1,8 @@
 "use client";
 
+import { exchangeCode, oauthStorage } from "@poc/oauth-client";
 import { use, useEffect, useRef, useState } from "react";
 import { FlowShell } from "@/components/flow-shell";
-import { exchangeCode, oauthStorage } from "@/lib/oauth";
 
 type CallbackPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

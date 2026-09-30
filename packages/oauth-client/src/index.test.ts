@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createCodeChallenge } from "./oauth";
+import { createCodeChallenge } from ".";
 
 test("creates the RFC 7636 S256 code challenge", async () => {
   expect(

@@ -1,8 +1,8 @@
 "use client";
 
+import { beginAuthorization } from "@poc/oauth-client";
 import { useState } from "react";
 import { FlowShell } from "@/components/flow-shell";
-import { beginAuthorization } from "@/lib/oauth";
 
 export default function Home() {
   const [starting, setStarting] = useState(false);

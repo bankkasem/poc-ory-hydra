@@ -12,6 +12,10 @@ export const loginRequestSchema = z.object({
     .regex(/^\d{6}$/),
 });
 
+export const loginChallengeSchema = z.object({
+  loginChallenge: z.string().trim().min(1),
+});
+
 export const consentRequestSchema = z.object({
   consentChallenge: z.string().trim().min(1),
 });

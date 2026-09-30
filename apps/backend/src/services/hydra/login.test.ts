@@ -1,23 +1,37 @@
 import { expect, test } from "bun:test";
-import { acceptLogin } from "./login";
+import { acceptLogin, getLoginRequest } from "./login";
 
-test("accepts a Hydra login challenge", async () => {
+test("reads and accepts a Hydra login challenge", async () => {
   const originalFetch = globalThis.fetch;
   const previousUrl = Bun.env.HYDRA_ADMIN_URL;
   Bun.env.HYDRA_ADMIN_URL = "http://hydra.test";
   globalThis.fetch = Object.assign(
     async (input: string | URL | Request, init?: RequestInit) => {
       const url = new URL(input.toString());
-      expect(init?.method).toBe("PUT");
-      expect(url.pathname).toBe("/admin/oauth2/auth/requests/login/accept");
       expect(url.searchParams.get("login_challenge")).toBe("challenge");
-      expect(JSON.parse(String(init?.body))).toEqual({ subject: "user-id" });
+
+      if (!init?.method) {
+        expect(url.pathname).toBe("/admin/oauth2/auth/requests/login");
+        return Response.json({ skip: true, subject: "user-id" });
+      }
+
+      expect(init.method).toBe("PUT");
+      expect(url.pathname).toBe("/admin/oauth2/auth/requests/login/accept");
+      expect(JSON.parse(String(init.body))).toEqual({
+        subject: "user-id",
+        remember: true,
+        remember_for: 3600,
+      });
       return Response.json({ redirect_to: "http://localhost:4444/continue" });
     },
     { preconnect: originalFetch.preconnect },
   );
 
   try {
+    expect(await getLoginRequest("challenge")).toEqual({
+      skip: true,
+      subject: "user-id",
+    });
     expect(await acceptLogin("challenge", "user-id")).toBe(
       "http://localhost:4444/continue",
     );

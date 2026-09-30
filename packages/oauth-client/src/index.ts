@@ -23,6 +23,7 @@ function oauthConfig() {
 export const oauthStorage = {
   verifier: "oauth.pkce_verifier",
   state: "oauth.state",
+  accessToken: "oauth.access_token",
 } as const;
 
 function base64Url(bytes: Uint8Array) {

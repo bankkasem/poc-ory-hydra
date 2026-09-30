@@ -2,12 +2,17 @@
 
 [ดู sequence diagram](./diagrams/auth-flow.mmd)
 
-ระบบนี้มีผู้เกี่ยวข้องหลักสี่ส่วน:
+ระบบนี้มีผู้เกี่ยวข้องหลักห้าส่วน:
 
 - **Frontend** พาผู้ใช้เดินตาม OAuth flow และเก็บ PKCE verifier
+- **New App** เป็น OAuth client ตัวที่สองและมีหน้าที่หลักซึ่งเข้าได้หลัง Login
 - **Backend** ตรวจตัวตนของผู้ใช้และติดต่อ Hydra Admin API
 - **Hydra** จัดการ OAuth/OIDC flow และออก token แต่ไม่เก็บ user หรือรหัสยืนยัน
 - **MySQL** เก็บข้อมูล user ของระบบเดิม
+
+Frontend ที่ `localhost:3000` และ New App ที่ `localhost:3002` เป็น OAuth client คนละตัว แต่ใช้หน้า Login, Backend และ Hydra ร่วมกัน Token ของแต่ละ client แยกจากกันและห้ามนำไปแชร์ระหว่างแอป
+
+เมื่อล็อกอินผ่าน client แรก Backend จะขอให้ Hydra จำ Login Session ไว้หนึ่งชั่วโมง หากเปิดอีก client ระหว่างที่ session ยังอยู่ Hydra จะส่งข้อมูลผู้ใช้เดิมกลับมาและหน้า Login เดิน flow ต่อให้อัตโนมัติ ผู้ใช้จึงไม่ต้องกรอกเบอร์โทรและรหัสซ้ำ แต่ยังอาจต้องอนุญาต scope ให้ client ใหม่
 
 ## ขั้นตอน
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { FlowShell } from "@/components/flow-shell";
 
 type LoginPageProps = {
@@ -11,8 +11,41 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const params = use(searchParams);
   const challenge = params.login_challenge;
   const loginChallenge = typeof challenge === "string" ? challenge : "";
+  const started = useRef(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+
+    if (!loginChallenge) {
+      setCheckingSession(false);
+      return;
+    }
+
+    fetch("/api/backend/auth/login/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ loginChallenge }),
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error("ไม่สามารถตรวจสอบการเข้าสู่ระบบได้");
+        if (data.skip && typeof data.redirectTo === "string") {
+          window.location.assign(data.redirectTo);
+          return;
+        }
+        setCheckingSession(false);
+      })
+      .catch((cause) => {
+        setError(
+          cause instanceof Error ? cause.message : "ไม่สามารถเชื่อมต่อ backend ได้",
+        );
+        setCheckingSession(false);
+      });
+  }, [loginChallenge]);
 
   async function login(formData: FormData) {
     setError("");
@@ -47,7 +80,11 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <FlowShell title="ยืนยันตัวตน">
-      {loginChallenge ? (
+      {checkingSession ? (
+        <p className="loading" role="status">
+          กำลังตรวจสอบ…
+        </p>
+      ) : loginChallenge ? (
         <form action={login} className="form-stack">
           <label>
             เบอร์โทร
