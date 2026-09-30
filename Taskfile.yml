@@ -5,12 +5,12 @@ tasks:
     desc: Install dependencies and start the local stack
     cmds:
       - test -f apps/backend/.env.local || cp apps/backend/.env.example apps/backend/.env.local
-      - test -f apps/frontend/.env.local || cp apps/frontend/.env.example apps/frontend/.env.local
+      - test -f apps/auth-app/.env.local || cp apps/auth-app/.env.example apps/auth-app/.env.local
       - test -f apps/new-app/.env.local || cp apps/new-app/.env.example apps/new-app/.env.local
       - bun install
       - docker compose up -d --wait
       - curl --retry 30 --retry-connrefused --retry-delay 1 --fail --silent --show-error http://127.0.0.1:4445/health/ready
-      - bun --env-file=apps/backend/.env.local --env-file=apps/frontend/.env.local scripts/setup-hydra-client.ts
+      - bun --env-file=apps/backend/.env.local --env-file=apps/auth-app/.env.local scripts/setup-hydra-client.ts
       - bun --env-file=apps/backend/.env.local --env-file=apps/new-app/.env.local scripts/setup-hydra-client.ts
 
   setup:fresh:

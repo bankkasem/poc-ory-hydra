@@ -4,13 +4,13 @@
 
 ระบบนี้มีผู้เกี่ยวข้องหลักห้าส่วน:
 
-- **Frontend** พาผู้ใช้เดินตาม OAuth flow และเก็บ PKCE verifier
+- **Auth App** แสดงหน้า Login และ Consent รวมทั้งเป็น OAuth client ตัวแรก
 - **New App** เป็น OAuth client ตัวที่สองและมีหน้าที่หลักซึ่งเข้าได้หลัง Login
 - **Backend** ตรวจตัวตนของผู้ใช้และติดต่อ Hydra Admin API
 - **Hydra** จัดการ OAuth/OIDC flow และออก token แต่ไม่เก็บ user หรือรหัสยืนยัน
 - **MySQL** เก็บข้อมูล user ของระบบเดิม
 
-Frontend ที่ `localhost:3000` และ New App ที่ `localhost:3002` เป็น OAuth client คนละตัว แต่ใช้หน้า Login, Backend และ Hydra ร่วมกัน Token ของแต่ละ client แยกจากกันและห้ามนำไปแชร์ระหว่างแอป
+Auth App ที่ `localhost:3000` และ New App ที่ `localhost:3002` เป็น OAuth client คนละตัว แต่ใช้หน้า Login, Backend และ Hydra ร่วมกัน Token ของแต่ละ client แยกจากกันและห้ามนำไปแชร์ระหว่างแอป
 
 เมื่อล็อกอินผ่าน client แรก Backend จะขอให้ Hydra จำ Login Session ไว้หนึ่งชั่วโมง หากเปิดอีก client ระหว่างที่ session ยังอยู่ Hydra จะส่งข้อมูลผู้ใช้เดิมกลับมาและหน้า Login เดิน flow ต่อให้อัตโนมัติ ผู้ใช้จึงไม่ต้องกรอกเบอร์โทรและรหัสซ้ำ แต่ยังอาจต้องอนุญาต scope ให้ client ใหม่
 
@@ -18,7 +18,7 @@ Frontend ที่ `localhost:3000` และ New App ที่ `localhost:3002`
 
 ### 1. ผู้ใช้เริ่ม Login
 
-Frontend สร้าง `code_verifier` และ `code_challenge` สำหรับ PKCE จากนั้น redirect browser ไปที่ Hydra `/oauth2/auth`
+Auth App สร้าง `code_verifier` และ `code_challenge` สำหรับ PKCE จากนั้น redirect browser ไปที่ Hydra `/oauth2/auth`
 
 ### 2. Hydra เริ่ม OAuth flow
 
@@ -30,9 +30,9 @@ http://localhost:3000/login?login_challenge=...
 
 `login_challenge` เป็นค่าอ้างอิง OAuth request รอบนี้ ไม่ใช่ token
 
-### 3. Frontend แสดงหน้า Login
+### 3. Auth App แสดงหน้า Login
 
-ผู้ใช้กรอกเบอร์โทรและรหัสหกหลัก จากนั้น frontend ส่งข้อมูลพร้อม `loginChallenge` ไปที่ backend:
+ผู้ใช้กรอกเบอร์โทรและรหัสหกหลัก จากนั้น Auth App ส่งข้อมูลพร้อม `loginChallenge` ไปที่ backend:
 
 ```http
 POST /auth/login
@@ -66,7 +66,7 @@ Hydra จะไม่เห็นเบอร์โทรหรือรหั�
 }
 ```
 
-Hydra ตอบ `redirect_to` เพื่อให้ browser เดิน flow ต่อ Frontend ต้อง redirect ไปยัง URL นี้โดยไม่แก้ไขเอง
+Hydra ตอบ `redirect_to` เพื่อให้ browser เดิน flow ต่อ Auth App ต้อง redirect ไปยัง URL นี้โดยไม่แก้ไขเอง
 
 ### 7. Hydra เริ่ม Consent flow
 
@@ -83,11 +83,11 @@ Login และ consent มีหน้าที่ต่างกัน:
 
 ### 8. Backend Accept Consent
 
-Frontend ส่ง `consent_challenge` ไป backend จากนั้น backend อ่าน requested scopes จาก Hydra และ accept scopes ชุดนั้นกลับไป โดยไม่เชื่อ scopes ที่ browser ส่งมาเอง
+Auth App ส่ง `consent_challenge` ไป backend จากนั้น backend อ่าน requested scopes จาก Hydra และ accept scopes ชุดนั้นกลับไป โดยไม่เชื่อ scopes ที่ browser ส่งมาเอง
 
 ### 9. Hydra ออก Authorization Code
 
-เมื่อ login และ consent สำเร็จ Hydra redirect browser กลับไปยัง callback ของ frontend:
+เมื่อ login และ consent สำเร็จ Hydra redirect browser กลับไปยัง callback ของ Auth App:
 
 ```text
 http://localhost:3000/callback?code=...&state=...
@@ -95,16 +95,16 @@ http://localhost:3000/callback?code=...&state=...
 
 Authorization code มีอายุสั้นและใช้ได้ครั้งเดียว
 
-### 10. Frontend แลก Code เป็น Token
+### 10. Auth App แลก Code เป็น Token
 
-Frontend ส่ง authorization code และ `code_verifier` ไป Hydra หาก verifier ตรงกับ challenge ที่ส่งไว้ตอนเริ่ม flow Hydra จะออก:
+Auth App ส่ง authorization code และ `code_verifier` ไป Hydra หาก verifier ตรงกับ challenge ที่ส่งไว้ตอนเริ่ม flow Hydra จะออก:
 
-- **ID token** บอก frontend ว่าผู้ใช้คือใคร
+- **ID token** บอก Auth App ว่าผู้ใช้คือใคร
 - **Access token** ใช้เรียก protected backend API
 
-### 11. Frontend เรียก Protected API
+### 11. Auth App เรียก Protected API
 
-Frontend เรียก backend พร้อม access token:
+Auth App เรียก backend พร้อม access token:
 
 ```http
 GET /me
@@ -113,6 +113,6 @@ Authorization: Bearer <access-token>
 
 ### 12. Backend ตรวจ Access Token
 
-Backend introspect token กับ Hydra หาก token ยังใช้งานได้ Hydra จะคืน OAuth subject ซึ่งตรงกับ user ID จากขั้น Accept Login จากนั้น backend โหลดข้อมูล user จาก MySQL และส่งกลับ frontend
+Backend introspect token กับ Hydra หาก token ยังใช้งานได้ Hydra จะคืน OAuth subject ซึ่งตรงกับ user ID จากขั้น Accept Login จากนั้น backend โหลดข้อมูล user จาก MySQL และส่งกลับ Auth App
 
-Frontend จะไม่เรียก Hydra Admin API โดยตรง และระบบจริงไม่ควรเปิด introspection endpoint ให้ browser หรือ public internet เข้าถึง
+Auth App จะไม่เรียก Hydra Admin API โดยตรง และระบบจริงไม่ควรเปิด introspection endpoint ให้ browser หรือ public internet เข้าถึง

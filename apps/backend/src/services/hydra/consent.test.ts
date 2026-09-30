@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { acceptConsent, getConsentRequest } from "./consent";
 
 const consentRequest = {
-  client: { client_id: "poc-frontend", client_name: "POC Frontend" },
+  client: { client_id: "poc-auth-app", client_name: "Auth App" },
   requested_scope: ["openid", "profile"],
   requested_access_token_audience: [],
   skip: false,
@@ -36,7 +36,7 @@ test("reads and accepts a Hydra consent challenge", async () => {
 
   try {
     expect(await getConsentRequest("challenge")).toEqual({
-      client: { id: "poc-frontend", name: "POC Frontend" },
+      client: { id: "poc-auth-app", name: "Auth App" },
       requestedScopes: ["openid", "profile"],
       requestedAudience: [],
       skip: false,

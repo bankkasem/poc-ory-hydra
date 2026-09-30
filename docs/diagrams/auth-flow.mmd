@@ -1,46 +1,46 @@
 sequenceDiagram
     autonumber
     actor User as ผู้ใช้ / Browser
-    participant Frontend as Next.js Frontend<br/>(OAuth Client)
+    participant AuthApp as Auth App<br/>(OAuth Client)
     participant Hydra as Ory Hydra<br/>(ออก Token)
     participant Backend as Bun Backend<br/>(ตรวจตัวตน)
     participant MySQL as MySQL<br/>(ข้อมูล User)
 
     Note over User,Hydra: เริ่ม OAuth flow ด้วย PKCE
-    User->>Frontend: กดเข้าสู่ระบบ
-    Frontend->>Hydra: ขอเริ่ม OAuth<br/>พร้อม code_challenge
+    User->>AuthApp: กดเข้าสู่ระบบ
+    AuthApp->>Hydra: ขอเริ่ม OAuth<br/>พร้อม code_challenge
 
     Note over User,MySQL: ยืนยันตัวตนของผู้ใช้
-    Hydra-->>Frontend: Redirect ไป /login<br/>พร้อม login_challenge
-    User->>Frontend: กรอกเบอร์โทรและรหัสหกหลัก
-    Frontend->>Backend: POST /auth/login<br/>login_challenge + เบอร์โทร + รหัสหกหลัก
+    Hydra-->>AuthApp: Redirect ไป /login<br/>พร้อม login_challenge
+    User->>AuthApp: กรอกเบอร์โทรและรหัสหกหลัก
+    AuthApp->>Backend: POST /auth/login<br/>login_challenge + เบอร์โทร + รหัสหกหลัก
     Backend->>MySQL: ค้นหา User ด้วยเบอร์โทร
     MySQL-->>Backend: User ID + Argon2id hash
     Backend->>Backend: ตรวจรหัสหกหลักกับ hash
     Backend->>Hydra: Accept login<br/>subject = User ID
     Hydra-->>Backend: redirect_to
-    Backend-->>Frontend: redirectTo
-    Frontend->>Hydra: Browser ไปยัง redirectTo
+    Backend-->>AuthApp: redirectTo
+    AuthApp->>Hydra: Browser ไปยัง redirectTo
 
     Note over User,Hydra: ขออนุญาต Scope
-    Hydra-->>Frontend: Redirect ไป /consent<br/>พร้อม consent_challenge
-    User->>Frontend: อนุญาต Scope ที่ร้องขอ
-    Frontend->>Backend: consent_challenge + Scope ที่อนุญาต
+    Hydra-->>AuthApp: Redirect ไป /consent<br/>พร้อม consent_challenge
+    User->>AuthApp: อนุญาต Scope ที่ร้องขอ
+    AuthApp->>Backend: consent_challenge + Scope ที่อนุญาต
     Backend->>Hydra: Accept consent ผ่าน Admin API
 
-    Note over Frontend,Hydra: ออกและแลก Authorization Code
-    Hydra-->>Frontend: Redirect ไป /callback<br/>พร้อม Authorization Code
-    Frontend->>Hydra: แลก Code + code_verifier
-    Hydra-->>Frontend: Access Token + ID Token
+    Note over AuthApp,Hydra: ออกและแลก Authorization Code
+    Hydra-->>AuthApp: Redirect ไป /callback<br/>พร้อม Authorization Code
+    AuthApp->>Hydra: แลก Code + code_verifier
+    Hydra-->>AuthApp: Access Token + ID Token
 
-    Note over Frontend,MySQL: เรียก Protected API
-    Frontend->>Backend: GET /me<br/>Bearer Access Token
+    Note over AuthApp,MySQL: เรียก Protected API
+    AuthApp->>Backend: GET /me<br/>Bearer Access Token
     Backend->>Hydra: Introspect Access Token
     Hydra-->>Backend: active + subject (User ID)
     Backend->>MySQL: โหลดข้อมูล User
     MySQL-->>Backend: ข้อมูล User
-    Backend-->>Frontend: ข้อมูล User ที่ได้รับอนุญาต
-    Frontend-->>User: แสดงสถานะเข้าสู่ระบบแล้ว
+    Backend-->>AuthApp: ข้อมูล User ที่ได้รับอนุญาต
+    AuthApp-->>User: แสดงสถานะเข้าสู่ระบบแล้ว
 
     Note over Backend,Hydra: Hydra Admin API เรียกได้จาก Backend เท่านั้น
     Note over Backend,MySQL: เบอร์โทรและรหัสหกหลักจะไม่ถูกส่งให้ Hydra

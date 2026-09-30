@@ -1,5 +1,5 @@
 {
-  "name": "@poc/frontend",
+  "name": "@poc/auth-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {

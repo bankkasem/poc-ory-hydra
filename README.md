@@ -4,7 +4,7 @@ Minimal Bun monorepo for learning how an existing application integrates with Or
 
 ## Apps
 
-- `apps/frontend` — login, consent, and the first OAuth client
+- `apps/auth-app` — login, consent, and the first OAuth client
 - `apps/new-app` — protected Next.js application and second OAuth client
 - `apps/backend` — Bun HTTP API
 
@@ -15,7 +15,7 @@ task setup
 bun run dev
 ```
 
-The original frontend runs on <http://localhost:3000>, New App runs on <http://localhost:3002>, and the backend health check is available on <http://localhost:3001/health>.
+Auth App runs on <http://localhost:3000>, New App runs on <http://localhost:3002>, and the backend health check is available on <http://localhost:3001/health>.
 
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
