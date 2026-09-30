@@ -1,50 +1,33 @@
 import { authenticateUser } from "../services/auth";
+import { findUserById } from "../services/database/users";
 import { acceptConsent, getConsentRequest } from "../services/hydra/consent";
 import { acceptLogin, getLoginRequest } from "../services/hydra/login";
-import { createOAuthSession, getOAuthSessionUser } from "../services/session";
+import { introspectAccessToken } from "../services/hydra/token";
 import {
+  bearerTokenSchema,
   consentRequestSchema,
   loginChallengeSchema,
   loginRequestSchema,
-  oauthSessionSchema,
-  sessionAuthorizationSchema,
 } from "./auth.schemas";
 
 function unauthorized() {
   return Response.json(
     { error: "Unauthorized" },
-    { status: 401, headers: { "WWW-Authenticate": "Session" } },
+    { status: 401, headers: { "WWW-Authenticate": "Bearer" } },
   );
 }
 
 export const authRoutes = {
-  "/auth/oauth/session": {
+  "/me": {
     GET: async (request: Request) => {
-      const sessionId = sessionAuthorizationSchema.safeParse(
+      const token = bearerTokenSchema.safeParse(
         request.headers.get("Authorization"),
       );
-      if (!sessionId.success) return unauthorized();
-
-      const user = await getOAuthSessionUser(sessionId.data);
+      if (!token.success) return unauthorized();
+      const subject = await introspectAccessToken(token.data);
+      if (!subject) return unauthorized();
+      const user = await findUserById(subject);
       return user ? Response.json(user) : unauthorized();
-    },
-    POST: async (request: Request) => {
-      const input = oauthSessionSchema.safeParse(
-        await request.json().catch(() => null),
-      );
-      if (!input.success)
-        return Response.json(
-          { error: "Invalid OAuth callback" },
-          { status: 400 },
-        );
-
-      const sessionId = await createOAuthSession(input.data);
-      return sessionId
-        ? Response.json({ sessionId })
-        : Response.json(
-            { error: "Invalid authorization code" },
-            { status: 401 },
-          );
     },
   },
   "/auth/login/session": {

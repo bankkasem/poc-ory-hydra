@@ -4,16 +4,76 @@ tasks:
   setup:
     desc: Install dependencies and start the local stack
     cmds:
-      - test -f apps/backend/.env.local || cp apps/backend/.env.example apps/backend/.env.local
-      - test -f apps/auth-app/.env.local || cp apps/auth-app/.env.example apps/auth-app/.env.local
-      - test -f apps/main-app/.env.local || cp apps/main-app/.env.example apps/main-app/.env.local
-      - test -f apps/member-app/.env.local || cp apps/member-app/.env.example apps/member-app/.env.local
+      - task: setup:env
       - bun install
       - docker compose up -d --wait
-      - docker compose exec -T mysql mysql -uroot -plocal-root-password < docker/mysql/init.sql
+      - docker compose restart hydra
       - curl --retry 30 --retry-all-errors --retry-connrefused --retry-delay 1 --fail --silent --show-error http://127.0.0.1:4445/health/ready
-      - bun --env-file=apps/backend/.env.local --env-file=apps/main-app/.env.local scripts/setup-hydra-client.ts
-      - bun --env-file=apps/backend/.env.local --env-file=apps/member-app/.env.local scripts/setup-hydra-client.ts
+      - task: setup:client
+        vars: { APP: main-app }
+      - task: setup:client
+        vars: { APP: member-app }
+
+  setup:env:
+    internal: true
+    silent: true
+    cmds:
+      - |
+        set -eu
+        for app in backend auth-app main-app member-app; do
+          task_env="apps/$app/.env.local"
+          test -f "$task_env" || cp "apps/$app/.env.example" "$task_env"
+        done
+        for app in main-app member-app; do
+          task_env="apps/$app/.env.local"
+          if ! awk -F= '$1 == "OAUTH_COOKIE_SECRET" && length($2) > 0 { found=1 } END { exit !found }' "$task_env"; then
+            task_secret=$(openssl rand -hex 32)
+            task_temp=$(mktemp)
+            awk -v key="$task_secret" '
+              /^OAUTH_COOKIE_SECRET=/ { print "OAUTH_COOKIE_SECRET=" key; found=1; next }
+              { print }
+              END { if (!found) print "OAUTH_COOKIE_SECRET=" key }
+            ' "$task_env" > "$task_temp"
+            mv "$task_temp" "$task_env"
+          fi
+        done
+
+  setup:client:
+    internal: true
+    silent: true
+    dotenv:
+      - 'apps/{{.APP}}/.env.local'
+      - apps/backend/.env.local
+    preconditions:
+      - sh: command -v jq
+        msg: jq is required for OAuth client setup
+    cmds:
+      - |
+        set -eu
+        : "${HYDRA_ADMIN_URL:?}" "${OAUTH_CLIENT_ID:?}" "${OAUTH_REDIRECT_URI:?}"
+        task_client_url="$HYDRA_ADMIN_URL/admin/clients/$(printf '%s' "$OAUTH_CLIENT_ID" | jq -sRr @uri)"
+        task_status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$task_client_url")
+        case "$task_status" in
+          200) task_method=PUT ;;
+          404) task_method=POST; task_client_url="$HYDRA_ADMIN_URL/admin/clients" ;;
+          *) echo "Unable to read OAuth client: HTTP $task_status" >&2; exit 1 ;;
+        esac
+        task_payload=$(jq -n \
+          --arg id "$OAUTH_CLIENT_ID" \
+          --arg name "${OAUTH_CLIENT_NAME:-$OAUTH_CLIENT_ID}" \
+          --arg redirect "$OAUTH_REDIRECT_URI" '{
+            client_id: $id, client_name: $name,
+            grant_types: ["authorization_code", "refresh_token"],
+            response_types: ["code"],
+            scope: "openid profile offline_access",
+            redirect_uris: [$redirect],
+            allowed_cors_origins: [($redirect | capture("^(?<origin>https?://[^/]+)").origin)],
+            token_endpoint_auth_method: "none", skip_consent: true
+          }')
+        printf '%s' "$task_payload" | curl --fail --silent --show-error \
+          --request "$task_method" --header 'Content-Type: application/json' \
+          --data-binary @- --output /dev/null "$task_client_url"
+        echo "OAuth client $OAUTH_CLIENT_ID is ready"
 
   setup:fresh:
     desc: Rebuild the local stack from empty Docker volumes

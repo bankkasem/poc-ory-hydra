@@ -10,4 +10,7 @@ if (!process.env.OAUTH_REDIRECT_URI)
 
 const nextConfig: NextConfig = {};
 
+if (!/^[0-9a-f]{64}$/i.test(process.env.OAUTH_COOKIE_SECRET ?? ""))
+  throw new Error("OAUTH_COOKIE_SECRET must be a 32-byte hex key");
+
 export default nextConfig;

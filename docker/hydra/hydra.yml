@@ -28,6 +28,14 @@ secrets:
 strategies:
   access_token: opaque
 
+ttl:
+  refresh_token: 720h
+
+oauth2:
+  grant:
+    refresh_token:
+      rotation_grace_period: 10s
+
 oidc:
   subject_identifiers:
     supported_types:

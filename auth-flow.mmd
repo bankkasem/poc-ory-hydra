@@ -1,0 +1,104 @@
+sequenceDiagram
+    autonumber
+    actor User as ผู้ใช้ / Browser
+    participant MainApp as Main App<br/>(Next.js BFF / OAuth Client)
+    participant MemberApp as Member App<br/>(Next.js BFF / OAuth Client)
+    participant Hydra as Ory Hydra
+    participant AuthApp as Auth App<br/>(หน้า Login + Consent)
+    participant Backend as Bun Backend
+    participant DB as MySQL<br/>(ข้อมูลผู้ใช้)
+
+    Note over User,Hydra: ช่วงที่ 1 — Login เข้า Main App
+    User->>MainApp: เปิด Main App โดยยังไม่มี cookie
+    MainApp->>MainApp: สุ่ม code_verifier + state<br/>hash verifier เป็น code_challenge
+    MainApp-->>User: เก็บ verifier/state ใน HttpOnly Cookie ชั่วคราว<br/>Redirect ไป Hydra
+    User->>Hydra: เริ่ม OAuth พร้อม PKCE<br/>client_id = poc-main-app<br/>scope = openid profile offline_access
+    Hydra-->>AuthApp: Redirect ผ่าน Browser ไป /login<br/>พร้อม login_challenge
+    AuthApp->>Backend: POST /auth/login/session<br/>พร้อม login_challenge
+    Backend->>Hydra: อ่าน Login Request
+    Hydra-->>Backend: skip = false (ยังไม่ได้ Login)
+    Backend-->>AuthApp: ต้องแสดงหน้า Login
+    AuthApp-->>User: แสดงแบบฟอร์ม
+    User->>AuthApp: กรอกเบอร์โทรและรหัสหกหลัก
+    AuthApp->>Backend: POST /auth/login
+    Backend->>DB: อ่านผู้ใช้และ hash ของรหัส
+    DB-->>Backend: ข้อมูลผู้ใช้
+    Backend->>Backend: ตรวจรหัสยืนยัน
+    Backend->>Hydra: Accept Login ด้วย user ID<br/>และจำ Hydra Login Session 1 ชั่วโมง
+    Hydra-->>AuthApp: Redirect ผ่าน Browser ไป /consent<br/>พร้อม consent_challenge
+    AuthApp->>Backend: อ่าน Consent Request และขอ accept
+    Backend->>Hydra: Auto-accept requested scopes<br/>สำหรับ Main App ที่เป็น first-party
+    Hydra-->>MainApp: Redirect ผ่าน Browser ไป /callback<br/>พร้อม Authorization Code + state
+    MainApp->>MainApp: ตรวจ state กับ cookie ชั่วคราว
+    MainApp->>Hydra: แลก Code + code_verifier
+    Hydra-->>MainApp: Access Token + Refresh Token ของ Main App
+    MainApp->>MainApp: เข้ารหัส Token และเวลาหมดอายุด้วย AES-GCM
+    MainApp-->>User: Set encrypted HttpOnly Cookie ของ Main App<br/>ล้าง verifier/state แล้ว Redirect เข้าหน้าหลัก
+    User->>MainApp: เปิดหน้าหลักพร้อม cookie
+    MainApp->>MainApp: ถอดรหัส cookie และตรวจอายุ
+    MainApp->>Backend: GET /me<br/>Bearer Access Token ของ Main App
+    Backend->>Hydra: Introspect Access Token
+    Hydra-->>Backend: active = true + subject
+    Backend->>DB: อ่านข้อมูลผู้ใช้ตาม subject
+    DB-->>Backend: ข้อมูลผู้ใช้
+    Backend-->>MainApp: ข้อมูลผู้ใช้
+    MainApp-->>User: แสดงหน้าหลัก
+
+    Note over User,MemberApp: ช่วงที่ 2 — เปิด Member App จากเมนูของ Main App
+    User->>MainApp: กดเมนูจัดการสมาชิก
+    MainApp-->>MemberApp: เปิด URL ของ Member App ผ่าน Browser<br/>โดยไม่ส่ง Token ของ Main App
+    MemberApp->>MemberApp: สร้าง PKCE + state ชุดใหม่
+    MemberApp-->>User: เก็บ verifier/state ใน cookie ชั่วคราว<br/>Redirect ไป Hydra
+    User->>Hydra: เริ่ม OAuth ของ Member App<br/>client_id = poc-member-app<br/>scope = openid profile offline_access
+    Hydra-->>AuthApp: Redirect ไป /login พร้อม login_challenge ใหม่
+    AuthApp->>Backend: POST /auth/login/session
+    Backend->>Hydra: อ่าน Login Request
+    Hydra-->>Backend: skip = true + subject เดิม
+    Backend->>Hydra: Accept Login ด้วย subject เดิม
+    Note over User,AuthApp: ยังมี Hydra Login Session<br/>จึงไม่แสดงแบบฟอร์ม Login
+    Hydra-->>AuthApp: Redirect ไป /consent
+    AuthApp->>Backend: อ่าน Consent Request และขอ accept
+    Backend->>Hydra: Auto-accept consent ของ Member App
+    Hydra-->>MemberApp: Redirect ไป /callback<br/>พร้อม Code + state ของ Member App
+    MemberApp->>MemberApp: ตรวจ state
+    MemberApp->>Hydra: แลก Code + code_verifier ของ Member App
+    Hydra-->>MemberApp: Access Token + Refresh Token ของ Member App
+    MemberApp->>MemberApp: เข้ารหัสด้วย key ของ Member App
+    MemberApp-->>User: Set HttpOnly Cookie ของ Member App<br/>แล้ว Redirect เข้าหน้าจัดการสมาชิก
+    User->>MemberApp: เปิดหน้าแอปพร้อม cookie ของ Member App
+    MemberApp->>Backend: GET /me<br/>Bearer Access Token ของ Member App
+    Backend->>Hydra: Introspect Access Token
+    Hydra-->>Backend: active = true + subject เดิม
+    Backend->>DB: อ่านข้อมูลผู้ใช้
+    DB-->>Backend: ข้อมูลผู้ใช้
+    Backend-->>MemberApp: ข้อมูลผู้ใช้
+    MemberApp-->>User: แสดงหน้าจัดการสมาชิก
+
+    Note over User,Hydra: ช่วงที่ 3 — ต่ออายุ Token ของ Member App<br/>Main App ใช้ขั้นตอนเดียวกันกับ Token ของตัวเอง
+    User->>MemberApp: เปิดหน้าที่ต้อง Login พร้อม cookie
+    MemberApp->>MemberApp: ถอดรหัส cookie<br/>พบ Access Token เหลืออายุไม่เกิน 5 วินาที
+    MemberApp-->>User: Redirect ไป /refresh ก่อน render หน้า
+    User->>MemberApp: เปิด /refresh พร้อม cookie เดิม
+    MemberApp->>Hydra: ส่ง Refresh Token ของ Member App<br/>grant_type = refresh_token
+    alt Refresh Token ยังใช้งานได้
+        Hydra-->>MemberApp: Access Token + Refresh Token ชุดใหม่
+        MemberApp->>MemberApp: เข้ารหัส Token ชุดใหม่<br/>คงวันหมดอายุ App Session เดิม
+        MemberApp-->>User: Set-Cookie ทับของเดิม<br/>Redirect กลับหน้าหลักของ Member App
+        User->>MemberApp: เปิดหน้าหลักพร้อม cookie ใหม่
+        MemberApp->>Backend: GET /me ด้วย Access Token ใหม่
+        Backend->>Hydra: Introspect Token ใหม่
+        Hydra-->>Backend: active = true + subject
+        Backend->>DB: อ่านข้อมูลผู้ใช้
+        DB-->>Backend: ข้อมูลผู้ใช้
+        Backend-->>MemberApp: ข้อมูลผู้ใช้
+        MemberApp-->>User: แสดงหน้าโดยไม่ต้อง Login ซ้ำ
+    else Refresh Token หมดอายุหรือถูกยกเลิก
+        Hydra-->>MemberApp: ปฏิเสธ refresh
+        MemberApp-->>User: ล้าง cookie และ Redirect ไป /login
+        Note over User,AuthApp: เริ่ม OAuth ใหม่<br/>ข้ามแบบฟอร์มได้หาก Hydra Login Session ยังอยู่
+    end
+
+    Note over MainApp,MemberApp: Token, cookie และ encryption key แยกต่อแอป<br/>App Session มีอายุสูงสุด 30 วันนับจาก Login
+    Note over User,Backend: JavaScript อ่าน cookie ไม่ได้<br/>Backend รับ Bearer Token จาก BFF และไม่เก็บ App Session
+    Note over AuthApp,Backend: Auth App ไม่รับ Token ของ Main App หรือ Member App
+    Note over MemberApp,Hydra: Hydra หมุน Refresh Token ทุกครั้ง<br/>ยอมให้ Token เดิมใช้ซ้ำใน grace period 10 วินาที

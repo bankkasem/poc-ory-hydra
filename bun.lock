@@ -37,12 +37,13 @@
       "name": "@poc/main-app",
       "version": "0.3.0",
       "dependencies": {
-        "@poc/oauth-client": "workspace:*",
         "next": "16.3.6",
         "react": "19.2.8",
         "react-dom": "19.2.8",
+        "zod": "^4.6.5",
       },
       "devDependencies": {
+        "@types/bun": "1.3.5",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
@@ -53,20 +54,18 @@
       "name": "@poc/member-app",
       "version": "0.3.0",
       "dependencies": {
-        "@poc/oauth-client": "workspace:*",
         "next": "16.3.6",
         "react": "19.2.8",
         "react-dom": "19.2.8",
+        "zod": "^4.6.5",
       },
       "devDependencies": {
+        "@types/bun": "1.3.5",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "typescript": "^5",
       },
-    },
-    "packages/oauth-client": {
-      "name": "@poc/oauth-client",
     },
   },
   "trustedDependencies": [
@@ -172,8 +171,6 @@
     "@poc/main-app": ["@poc/main-app@workspace:apps/main-app"],
 
     "@poc/member-app": ["@poc/member-app@workspace:apps/member-app"],
-
-    "@poc/oauth-client": ["@poc/oauth-client@workspace:packages/oauth-client"],
 
     "@swc/helpers": ["@swc/helpers@0.5.23", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw=="],
 

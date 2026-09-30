@@ -1,6 +1,9 @@
-import { createAuthorizationRequest } from "@poc/oauth-client";
 import { NextResponse } from "next/server";
-import { authConfig, secureCookie } from "@/lib/auth";
+import {
+  authConfig,
+  createAuthorizationRequest,
+  secureCookie,
+} from "@/lib/auth";
 
 export async function GET() {
   const config = authConfig();

@@ -7,11 +7,18 @@
 ### Added
 
 - เพิ่ม Refresh Token และรองรับ token rotation ของ Hydra
-- เพิ่ม App Session ที่เก็บ Access Token และ Refresh Token ใน MySQL
+- เพิ่ม App Session ที่เก็บ Access Token และ Refresh Token ใน encrypted cookie
 - เพิ่ม HttpOnly session cookie สำหรับ Main App และ Member App
 
 ### Changed
 
+- ย้าย Access/Refresh Token จาก MySQL ไป encrypted HttpOnly cookie แยกแต่ละแอป
+- ให้ Next.js BFF แลก Code และ Refresh Token โดยตรง พร้อมอัปเดต cookie หลัง rotation
+- คืน Backend เป็น Resource Server ที่ตรวจ Bearer Token ผ่าน `GET /me`
+- ยกเลิกการใช้ตาราง `oauth_sessions` และตั้ง Hydra refresh-token grace period 10 วินาที
+- เพิ่ม `OAUTH_COOKIE_SECRET` และอายุ App Session สูงสุด 30 วัน
+- ยุบเอกสารและ diagram ใน `docs/` เหลือ `auth-flow.mmd` ที่ root สำหรับ flow ล่าสุด
+- ย้าย OAuth helpers เข้าแต่ละแอป และรวม setup ใน Taskfile เพื่อลบ `packages/` และ `scripts/`
 - ย้าย OAuth callback และการตรวจ session ไปทำฝั่ง Next.js BFF
 - Redirect ก่อน render หน้าเมื่อมี Hydra Login Session เพื่อลดหน้ากระพิบ
 

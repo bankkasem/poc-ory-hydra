@@ -1,5 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { authConfig, secureCookie } from "@/lib/auth";
+import {
+  authConfig,
+  encryptSession,
+  requestTokens,
+  sessionCookieOptions,
+} from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const config = authConfig();
@@ -12,29 +17,27 @@ export async function GET(request: NextRequest) {
     return new Response("Invalid OAuth callback", { status: 400 });
   }
 
-  const exchange = await fetch(`${config.backendUrl}/auth/oauth/session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      clientId: config.clientId,
-      code,
-      codeVerifier,
-      redirectUri: config.redirectUri,
-    }),
+  const session = await requestTokens(config.hydraPublicUrl, {
+    client_id: config.clientId,
+    code,
+    code_verifier: codeVerifier,
+    redirect_uri: config.redirectUri,
+    grant_type: "authorization_code",
   });
-  const data = await exchange.json();
-  if (!exchange.ok || typeof data.sessionId !== "string") {
+  if (!session) {
     return new Response("Unable to create session", { status: 401 });
   }
 
-  const response = NextResponse.redirect(new URL("/", request.url));
-  response.cookies.set(config.cookies.session, data.sessionId, {
-    httpOnly: true,
-    maxAge: 60 * 60 * 24 * 30,
-    path: "/",
-    sameSite: "lax",
-    secure: secureCookie,
-  });
+  const response = NextResponse.redirect(new URL("/", config.redirectUri));
+  response.headers.set("Cache-Control", "no-store");
+  response.cookies.set(
+    config.cookies.session,
+    await encryptSession(session, config.cookieSecret, config.clientId),
+    {
+      ...sessionCookieOptions,
+      expires: new Date(session.sessionExpiresAt),
+    },
+  );
   response.cookies.set(config.cookies.state, "", {
     maxAge: 0,
     path: "/callback",

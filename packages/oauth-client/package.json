@@ -1,9 +1,0 @@
-{
-  "name": "@poc/oauth-client",
-  "private": true,
-  "type": "module",
-  "exports": "./src/index.ts",
-  "scripts": {
-    "test": "bun test"
-  }
-}
