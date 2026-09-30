@@ -9,7 +9,7 @@ tasks:
       - bun install
       - docker compose up -d --wait
       - curl --retry 30 --retry-connrefused --retry-delay 1 --fail --silent --show-error http://127.0.0.1:4445/health/ready
-      - bun run setup
+      - bun --env-file=apps/backend/.env.local --env-file=apps/frontend/.env.local scripts/setup-hydra-client.ts
 
   setup:fresh:
     desc: Rebuild the local stack from empty Docker volumes

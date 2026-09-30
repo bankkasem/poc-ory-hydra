@@ -18,7 +18,7 @@ Frontend runs on <http://localhost:3000> and backend health check on <http://loc
 
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
-`bun run setup` creates or updates the public OAuth client and is safe to run again after changing its local configuration.
+`task setup` creates or updates the public OAuth client and is safe to run again after changing its local configuration.
 
 Run `task setup:fresh` to verify setup from empty Docker volumes. It asks for confirmation before deleting local MySQL and Hydra data.
 
