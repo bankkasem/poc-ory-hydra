@@ -1,0 +1,34 @@
+# Changelog
+
+การเปลี่ยนแปลงสำคัญของแต่ละเวอร์ชันจะบันทึกไว้ในไฟล์นี้
+
+## [Unreleased]
+
+## [0.2.0] - 2026-09-30
+
+### Added
+
+- เพิ่ม New App เป็น OAuth client ตัวที่สอง
+- เพิ่ม Hydra Login Session เพื่อเข้าแอปที่สองโดยไม่ต้องกรอกรหัสซ้ำ
+- เพิ่ม package กลางสำหรับ OAuth Authorization Code flow with PKCE
+- เพิ่มการตั้งค่า OAuth clients หลายตัวผ่าน Taskfile
+
+### Changed
+
+- เปลี่ยนชื่อ Frontend เป็น Auth App เพื่อแยกบทบาทให้ชัดเจน
+
+## [0.1.0] - 2026-09-30
+
+### Added
+
+- สร้าง Bun monorepo สำหรับ Next.js frontend และ Bun backend
+- เพิ่มการยืนยันตัวตนด้วยเบอร์โทรและรหัสหกหลักจาก MySQL
+- เพิ่ม OAuth Authorization Code flow with PKCE
+- เพิ่ม Hydra Login, Consent และ Access Token introspection
+- เพิ่ม local Hydra และ MySQL stack ด้วย Docker Compose
+- เพิ่ม Taskfile สำหรับติดตั้งและเริ่มระบบ local
+- เพิ่มเอกสาร Authentication flow และ PKCE
+
+[Unreleased]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/bankkasem/poc-ory-hydra/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/bankkasem/poc-ory-hydra/releases/tag/v0.1.0
