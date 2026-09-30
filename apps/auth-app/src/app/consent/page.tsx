@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { FlowShell } from "@/components/flow-shell";
 
 type ConsentPageProps = {
@@ -10,6 +10,7 @@ type ConsentPageProps = {
 type Consent = {
   client: { name: string };
   requestedScopes: string[];
+  skip: boolean;
 };
 
 const scopeLabels: Record<string, string> = {
@@ -17,16 +18,31 @@ const scopeLabels: Record<string, string> = {
   profile: "ข้อมูลโปรไฟล์",
 };
 
+async function acceptConsent(consentChallenge: string) {
+  const response = await fetch("/api/backend/auth/consent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ consentChallenge }),
+  });
+  const data = await response.json();
+  if (!response.ok || typeof data.redirectTo !== "string") {
+    throw new Error("ไม่สามารถอนุญาตได้");
+  }
+  window.location.assign(data.redirectTo);
+}
+
 export default function ConsentPage({ searchParams }: ConsentPageProps) {
   const params = use(searchParams);
   const challenge = params.consent_challenge;
   const consentChallenge = typeof challenge === "string" ? challenge : "";
+  const started = useRef(false);
   const [consent, setConsent] = useState<Consent | null>(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!consentChallenge) return;
+    if (!consentChallenge || started.current) return;
+    started.current = true;
 
     fetch(
       `/api/backend/auth/consent?consentChallenge=${encodeURIComponent(consentChallenge)}`,
@@ -34,6 +50,7 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok) throw new Error("ไม่สามารถโหลดคำขอได้");
+        if (data.skip) return acceptConsent(consentChallenge);
         setConsent(data);
       })
       .catch((cause) =>
@@ -48,16 +65,7 @@ export default function ConsentPage({ searchParams }: ConsentPageProps) {
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/backend/auth/consent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consentChallenge }),
-      });
-      const data = await response.json();
-      if (!response.ok || typeof data.redirectTo !== "string") {
-        throw new Error("ไม่สามารถอนุญาตได้");
-      }
-      window.location.assign(data.redirectTo);
+      await acceptConsent(consentChallenge);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "ไม่สามารถเชื่อมต่อ backend ได้",

@@ -25,7 +25,7 @@ export default function Home() {
         sessionStorage.removeItem(oauthStorage.accessToken);
         return beginAuthorization();
       }
-      if (!response.ok) throw new Error("ไม่สามารถโหลดข้อมูลบัญชีได้");
+      if (!response.ok) throw new Error("ไม่สามารถโหลดข้อมูลผู้ใช้งานได้");
       setUser(await response.json());
     }
 
@@ -41,7 +41,7 @@ export default function Home() {
         {user ? <span className="status">เข้าสู่ระบบแล้ว</span> : null}
       </header>
       <section>
-        <h1>บัญชีของฉัน</h1>
+        <h1>จัดการสมาชิก</h1>
         {error ? (
           <p className="error" role="alert">
             {error}
@@ -49,7 +49,7 @@ export default function Home() {
         ) : user ? (
           <dl>
             <div>
-              <dt>เบอร์โทร</dt>
+              <dt>ผู้ใช้งาน</dt>
               <dd>{user.phoneNumber}</dd>
             </div>
           </dl>

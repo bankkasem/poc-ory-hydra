@@ -5,6 +5,7 @@ const consentResponseSchema = z.object({
   client: z.object({
     client_id: z.string(),
     client_name: z.string().nullish(),
+    skip_consent: z.boolean().default(false),
   }),
   requested_scope: z.array(z.string()).default([]),
   requested_access_token_audience: z.array(z.string()).default([]),
@@ -35,7 +36,7 @@ export async function getConsentRequest(consentChallenge: string) {
     },
     requestedScopes: data.requested_scope,
     requestedAudience: data.requested_access_token_audience,
-    skip: data.skip,
+    skip: data.skip || data.client.skip_consent,
   };
 }
 

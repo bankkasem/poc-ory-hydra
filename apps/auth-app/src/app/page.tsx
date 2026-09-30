@@ -1,27 +1,9 @@
-"use client";
-
-import { beginAuthorization } from "@poc/oauth-client";
-import { useState } from "react";
 import { FlowShell } from "@/components/flow-shell";
 
 export default function Home() {
-  const [starting, setStarting] = useState(false);
-
-  async function startLogin() {
-    setStarting(true);
-    await beginAuthorization();
-  }
-
   return (
-    <FlowShell title="เข้าสู่ระบบ">
-      <button
-        type="button"
-        className="primary-button"
-        onClick={startLogin}
-        disabled={starting}
-      >
-        {starting ? "กำลังดำเนินการ…" : "เข้าสู่ระบบ"}
-      </button>
+    <FlowShell title="ระบบยืนยันตัวตน">
+      <p className="loading">กรุณาเข้าสู่ระบบผ่านแอปพลิเคชัน</p>
     </FlowShell>
   );
 }

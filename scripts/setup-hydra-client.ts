@@ -15,6 +15,7 @@ const client = {
   redirect_uris: [redirectUri],
   allowed_cors_origins: [new URL(redirectUri).origin],
   token_endpoint_auth_method: "none",
+  skip_consent: true,
 };
 
 const clientUrl = new URL(`/admin/clients/${clientId}`, adminUrl);

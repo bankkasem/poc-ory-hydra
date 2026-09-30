@@ -1,6 +1,6 @@
 {
-  "name": "@poc/new-app",
-  "version": "0.2.0",
+  "name": "@poc/main-app",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",

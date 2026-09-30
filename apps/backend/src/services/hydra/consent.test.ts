@@ -2,7 +2,11 @@ import { expect, test } from "bun:test";
 import { acceptConsent, getConsentRequest } from "./consent";
 
 const consentRequest = {
-  client: { client_id: "poc-auth-app", client_name: "Auth App" },
+  client: {
+    client_id: "poc-main-app",
+    client_name: "Main App",
+    skip_consent: true,
+  },
   requested_scope: ["openid", "profile"],
   requested_access_token_audience: [],
   skip: false,
@@ -36,10 +40,10 @@ test("reads and accepts a Hydra consent challenge", async () => {
 
   try {
     expect(await getConsentRequest("challenge")).toEqual({
-      client: { id: "poc-auth-app", name: "Auth App" },
+      client: { id: "poc-main-app", name: "Main App" },
       requestedScopes: ["openid", "profile"],
       requestedAudience: [],
-      skip: false,
+      skip: true,
     });
     expect(await acceptConsent("challenge")).toBe(
       "http://localhost:4444/continue",

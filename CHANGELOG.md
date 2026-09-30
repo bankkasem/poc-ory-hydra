@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- เพิ่ม Main App และ Member App เป็น OAuth clients แยกกัน
+- เพิ่ม SSO จาก Main App ไป Member App ผ่าน Hydra Login Session
+- เพิ่ม auto-accept consent สำหรับ first-party clients
+
+### Changed
+
+- เปลี่ยน New App เป็น Main App
+- จำกัด Auth App ให้ทำหน้าที่ Login และ Consent เท่านั้น
+
 ## [0.2.0] - 2026-09-30
 
 ### Added
