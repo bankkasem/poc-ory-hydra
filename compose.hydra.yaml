@@ -32,19 +32,30 @@ services:
     command: serve all --dev
     environment:
       # ECS: inject DSN and SECRETS_SYSTEM using Secrets Manager, not plaintext.
+      # Database
       DSN: mysql://hydra:local-hydra-password@tcp(hydra-mysql:3306)/hydra_db?parseTime=true
+
+      # System secrets
       SECRETS_SYSTEM: local-development-system-secret-change-me
+
+      # URLs
       URLS_SELF_ISSUER: http://localhost:4444
       URLS_LOGIN: http://localhost:3001/login
       URLS_CONSENT: http://localhost:3001/consent
+
+      # Browser cookies and CORS
       SERVE_COOKIES_SAME_SITE_MODE: Lax
       SERVE_PUBLIC_CORS_ENABLED: "true"
       SERVE_PUBLIC_CORS_ALLOWED_ORIGINS: http://localhost:3002,http://localhost:3003
       SERVE_PUBLIC_CORS_ALLOWED_METHODS: GET,POST,OPTIONS
       SERVE_PUBLIC_CORS_ALLOWED_HEADERS: Authorization,Content-Type
+
+      # OAuth tokens
       STRATEGIES_ACCESS_TOKEN: opaque
       TTL_REFRESH_TOKEN: 720h
       OAUTH2_GRANT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD: 10s
+
+      # OpenID Connect
       OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
     ports:
       - "127.0.0.1:4444:4444"
