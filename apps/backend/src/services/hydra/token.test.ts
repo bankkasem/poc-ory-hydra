@@ -20,7 +20,7 @@ test("introspects active and inactive access tokens", async () => {
 
       return Response.json(
         requestCount === 1
-          ? { active: true, sub: "user-id" }
+          ? { active: true, sub: "user-id", token_use: "access_token" }
           : { active: false },
       );
     },

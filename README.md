@@ -2,7 +2,7 @@
 
 Minimal Bun monorepo for learning how an existing application integrates with Ory Hydra.
 
-See [Authentication flow](./auth-flow.mmd) for the current login, SSO, and refresh-token sequence.
+See [Authentication flow](./auth-flow.mmd) for the current login, SSO, refresh-token, and logout sequence.
 
 ## Apps
 
@@ -38,6 +38,26 @@ Main App and Member App store access and refresh tokens in an AES-256-GCM encryp
 `OAUTH_COOKIE_SECRET` is a separate 32-byte hex key per app. `task setup` generates missing keys in each app's `.env.local` and preserves existing keys. For deployment, keep keys in server environment variables and use HTTPS; you can generate keys with `openssl rand -hex 32`. Cookies have an absolute 30-day lifetime matching the configured Hydra refresh-token lifetime. Changing a key invalidates that app's cookies.
 
 An expired access token redirects through the app's `/refresh` Route Handler, which writes the rotated tokens into a new cookie before returning to the page. Hydra allows a 10-second refresh-token grace period for overlapping requests. This is a bounded retry window, not a guarantee for every concurrent request or delayed response.
+
+## Logout
+
+The logout button in Main App or Member App ends all app authorizations associated with the current Hydra login session, not all devices belonging to the user. During consent, the backend puts Hydra's `login_session_id` in token metadata. Logout uses the app's refresh token as proof, introspects it server-side, and gets the subject/session ID from Hydra; the browser cannot choose another user's session ID.
+
+The backend lists consent requests for that subject and login session (including pagination) **before** deleting the login session: Hydra clears that relationship when the login session is deleted. It then revokes each listed token chain, including rotated access/refresh tokens. No app session table, ID-token storage, or front/back-channel callback is added. Hydra's old browser cookie may remain, but its server-side login session is gone and cannot provide SSO.
+
+The app where logout was clicked clears its cookie and shows `/logged-out`. Other apps clear their own cookies on their next protected request when the backend returns `401` or refresh is rejected. An already-open page is not updated in real time, and previously displayed data is not erased remotely. Another browser's login session and tokens are unaffected. `GET /logout` only performs local cookie cleanup; only the same-origin `POST /logout` button requests global browser-session logout.
+
+Log in again after updating an existing checkout: previously issued tokens lack logout metadata. Such tokens receive an explicit error rather than falling back to revoking every device. Backend/Hydra failures also show an error, not a successful logout. Hydra's admin calls are not a single transaction; partial failures or a concurrently completing authorization require reconciliation before claiming production-grade atomic logout. This POC covers the normal completed-login flow, not that concurrency guarantee. A newly created Hydra login session in the same browser is also a separate scope from older app tokens issued under a previous session.
+
+With Docker and the dev servers running, run the repeatable two-browser test:
+
+```bash
+HYDRA_LOGOUT_E2E=1 bun test apps/main-app/src/lib/logout.integration.test.ts
+```
+
+It checks Main/Member logout, rotated token revocation, cookie cleanup, rejected cross-origin logout, fresh login in the logged-out browser, and continued API access/SSO in a second browser. Unit tests run with `bun test` (the browser test is opt-in).
+
+## Local database
 
 Existing `oauth_sessions` tables from the earlier implementation are no longer read or written. Setup preserves those tables and their data; a fresh installation does not create them.
 

@@ -37,15 +37,25 @@ header {
   border-bottom: 1px solid var(--line);
 }
 
+header button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+header button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
 .brand {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-.status {
-  color: var(--muted);
-  font-size: 0.875rem;
 }
 
 section {

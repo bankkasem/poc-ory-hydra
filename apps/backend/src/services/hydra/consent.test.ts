@@ -10,6 +10,7 @@ const consentRequest = {
   requested_scope: ["openid", "profile"],
   requested_access_token_audience: [],
   skip: false,
+  login_session_id: "browser-session",
 };
 
 test("reads and accepts a Hydra consent challenge", async () => {
@@ -26,6 +27,7 @@ test("reads and accepts a Hydra consent challenge", async () => {
         expect(JSON.parse(String(init.body))).toEqual({
           grant_scope: ["openid", "profile"],
           grant_access_token_audience: [],
+          session: { access_token: { loginSessionId: "browser-session" } },
         });
         return Response.json({
           redirect_to: "http://localhost:4444/continue",
@@ -44,6 +46,7 @@ test("reads and accepts a Hydra consent challenge", async () => {
       requestedScopes: ["openid", "profile"],
       requestedAudience: [],
       skip: true,
+      loginSessionId: "browser-session",
     });
     expect(await acceptConsent("challenge")).toBe(
       "http://localhost:4444/continue",

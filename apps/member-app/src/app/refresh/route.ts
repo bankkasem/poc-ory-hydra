@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (!session) {
     response.headers.set(
       "Location",
-      new URL("/login", config.redirectUri).href,
+      new URL("/logged-out", config.redirectUri).href,
     );
     response.cookies.set(config.cookies.session, "", {
       ...sessionCookieOptions,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   if (!refreshed) {
     response.headers.set(
       "Location",
-      new URL("/login", config.redirectUri).href,
+      new URL("/logged-out", config.redirectUri).href,
     );
     response.cookies.set(config.cookies.session, "", {
       ...sessionCookieOptions,

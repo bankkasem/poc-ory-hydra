@@ -10,6 +10,7 @@ const consentResponseSchema = z.object({
   requested_scope: z.array(z.string()).default([]),
   requested_access_token_audience: z.array(z.string()).default([]),
   skip: z.boolean(),
+  login_session_id: z.string().min(1),
 });
 const acceptConsentResponseSchema = z.object({
   redirect_to: z.string().url(),
@@ -37,6 +38,7 @@ export async function getConsentRequest(consentChallenge: string) {
     requestedScopes: data.requested_scope,
     requestedAudience: data.requested_access_token_audience,
     skip: data.skip || data.client.skip_consent,
+    loginSessionId: data.login_session_id,
   };
 }
 
@@ -50,6 +52,7 @@ export async function acceptConsent(consentChallenge: string) {
       body: JSON.stringify({
         grant_scope: request.requestedScopes,
         grant_access_token_audience: request.requestedAudience,
+        session: { access_token: { loginSessionId: request.loginSessionId } },
       }),
     },
   );

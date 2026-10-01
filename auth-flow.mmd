@@ -94,9 +94,30 @@ sequenceDiagram
         MemberApp-->>User: แสดงหน้าโดยไม่ต้อง Login ซ้ำ
     else Refresh Token หมดอายุหรือถูกยกเลิก
         Hydra-->>MemberApp: ปฏิเสธ refresh
-        MemberApp-->>User: ล้าง cookie และ Redirect ไป /login
-        Note over User,AuthApp: เริ่ม OAuth ใหม่<br/>ข้ามแบบฟอร์มได้หาก Hydra Login Session ยังอยู่
+        MemberApp-->>User: ล้าง cookie และแสดงหน้าออกจากระบบ<br/>ผู้ใช้กด Login เมื่อต้องการเริ่มใหม่
     end
+
+    Note over User,Hydra: ช่วงที่ 4 — ออกจากทุกแอปใน Login Session นี้<br/>ไม่กระทบ Login Session ของ browser หรืออุปกรณ์อื่น
+    User->>MainApp: กดออกจากระบบ (POST /logout)
+    MainApp->>MainApp: ตรวจ Origin และถอดรหัส cookie
+    MainApp->>Backend: POST /auth/logout<br/>แนบ Refresh Token ฝั่ง server
+    Backend->>Hydra: Introspect Refresh Token
+    Hydra-->>Backend: subject + loginSessionId ที่บันทึกไว้ตอน Consent
+    Backend->>Hydra: อ่านรายการ Consent ของ subject + session นี้<br/>ให้ครบทุกหน้า ก่อนลบ Login Session
+    Hydra-->>Backend: consent_request_id ของ Main และ Member
+    Backend->>Hydra: ลบ Login Session นี้ (sid)<br/>ไม่ลบทุก session ของ user
+    loop แต่ละ consent_request_id ที่อ่านไว้
+        Backend->>Hydra: Revoke token chain ของคำขอนั้น<br/>รวม Access/Refresh Token ที่หมุนแล้ว
+    end
+    Backend-->>MainApp: ออกจากระบบสำเร็จ
+    MainApp-->>User: ล้าง cookie ของ Main App<br/>แสดงหน้าออกจากระบบ
+    User->>MemberApp: กลับไปเปิดหรือโหลด Member App ใหม่
+    MemberApp->>Backend: GET /me ด้วย token เดิม
+    Backend->>Hydra: Introspect token
+    Hydra-->>Backend: active = false
+    Backend-->>MemberApp: 401 Unauthorized
+    MemberApp-->>User: ล้าง cookie ของ Member App<br/>แสดงหน้าออกจากระบบ
+    Note over User,MemberApp: แอปที่เปิดค้างจะรับรู้เมื่อมี request ถัดไป<br/>ไม่ใช้ Front/Back-channel และไม่เพิ่ม session table
 
     Note over MainApp,MemberApp: Token, cookie และ encryption key แยกต่อแอป<br/>App Session มีอายุสูงสุด 30 วันนับจาก Login
     Note over User,Backend: JavaScript อ่าน cookie ไม่ได้<br/>Backend รับ Bearer Token จาก BFF และไม่เก็บ App Session

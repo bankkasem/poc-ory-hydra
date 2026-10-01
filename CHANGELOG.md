@@ -6,6 +6,9 @@
 
 ### Added
 
+- เพิ่ม Logout ของ Main/Member ตาม Hydra login session ปัจจุบัน โดยไม่กระทบ browser อื่น
+- เพิ่มการ revoke token chains รวม token ที่หมุนแล้ว และหน้าออกจากระบบ
+- เพิ่ม regression test ผ่าน agent-browser แยกสอง browser
 - เพิ่ม Refresh Token และรองรับ token rotation ของ Hydra
 - เพิ่ม App Session ที่เก็บ Access Token และ Refresh Token ใน encrypted cookie
 - เพิ่ม HttpOnly session cookie สำหรับ Main App และ Member App

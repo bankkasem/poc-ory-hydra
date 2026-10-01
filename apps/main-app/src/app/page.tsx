@@ -18,7 +18,7 @@ async function getUser() {
     headers: { Authorization: `Bearer ${session.accessToken}` },
     cache: "no-store",
   });
-  if (response.status === 401) redirect("/login");
+  if (response.status === 401) redirect("/logout");
   if (!response.ok) throw new Error("Unable to load user");
   return (await response.json()) as User;
 }
@@ -30,7 +30,12 @@ export default async function Home() {
     <main>
       <header>
         <span className="brand">Main</span>
-        <a href={process.env.MEMBER_APP_URL}>จัดการสมาชิก</a>
+        <nav aria-label="เมนูหลัก">
+          <a href={process.env.MEMBER_APP_URL}>จัดการสมาชิก</a>
+          <form action="/logout" method="post">
+            <button type="submit">ออกจากระบบ</button>
+          </form>
+        </nav>
       </header>
       <section>
         <h1>หน้าหลัก</h1>

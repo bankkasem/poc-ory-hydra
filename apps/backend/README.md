@@ -20,6 +20,7 @@ src/
         ├── login.ts
         ├── consent.ts
         ├── token.ts
+        ├── logout.ts
         └── *.test.ts
 ```
 

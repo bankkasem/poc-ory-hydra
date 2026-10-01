@@ -2,6 +2,7 @@ import { authenticateUser } from "../services/auth";
 import { findUserById } from "../services/database/users";
 import { acceptConsent, getConsentRequest } from "../services/hydra/consent";
 import { acceptLogin, getLoginRequest } from "../services/hydra/login";
+import { logoutBrowserSession } from "../services/hydra/logout";
 import { introspectAccessToken } from "../services/hydra/token";
 import {
   bearerTokenSchema,
@@ -18,6 +19,22 @@ function unauthorized() {
 }
 
 export const authRoutes = {
+  "/auth/logout": {
+    POST: async (request: Request) => {
+      const token = bearerTokenSchema.safeParse(
+        request.headers.get("Authorization"),
+      );
+      if (!token.success) return unauthorized();
+      const result = await logoutBrowserSession(token.data);
+      if (result === "unauthorized") return unauthorized();
+      if (result === "missing-session-id")
+        return Response.json(
+          { error: "Log in again to enable browser-session logout" },
+          { status: 409 },
+        );
+      return new Response(null, { status: 204 });
+    },
+  },
   "/me": {
     GET: async (request: Request) => {
       const token = bearerTokenSchema.safeParse(
