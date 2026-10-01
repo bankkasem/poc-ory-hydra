@@ -8,6 +8,8 @@ services:
       MYSQL_DATABASE: hydra_db
       MYSQL_USER: hydra
       MYSQL_PASSWORD: local-hydra-password
+    ports:
+      - "127.0.0.1:3307:3306"
     volumes:
       - hydra-mysql-data:/var/lib/mysql
     healthcheck:

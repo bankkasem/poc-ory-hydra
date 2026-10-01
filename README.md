@@ -25,7 +25,7 @@ Auth App runs on <http://localhost:3001>, Main App on <http://localhost:3002>, M
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. The local infrastructure is split into two independent Compose projects:
 
 - `compose.app.yaml` — project `poc-app`; `app-mysql` simulates the existing application database (`app_db`) on `localhost:3306`.
-- `compose.hydra.yaml` — project `poc-hydra`; `hydra-mysql`, `hydra-migrate`, and `hydra` form the new OAuth stack. Its database (`hydra_db`) has a separate user and volume, with no host port exposed.
+- `compose.hydra.yaml` — project `poc-hydra`; `hydra-mysql`, `hydra-migrate`, and `hydra` form the new OAuth stack. Its database (`hydra_db`) has a separate user and volume, accessible locally on `127.0.0.1:3307` for tools such as TablePlus (user `hydra`, password `local-hydra-password`).
 
 Hydra does not connect to `app_db`. The backend reads application users and communicates with Hydra through its Admin API. Each Compose project has its own network; they do not need a shared Docker network because the applications run on the host.
 
