@@ -22,7 +22,14 @@ bun run dev
 
 Auth App runs on <http://localhost:3001>, Main App on <http://localhost:3002>, Member App on <http://localhost:3003>, and the backend health check is available on <http://localhost:3000/health>.
 
-Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
+Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. The local infrastructure is split into two independent Compose projects:
+
+- `compose.app.yaml` — project `poc-app`; `app-mysql` simulates the existing application database (`app_db`) on `localhost:3306`.
+- `compose.hydra.yaml` — project `poc-hydra`; `hydra-mysql`, `hydra-migrate`, and `hydra` form the new OAuth stack. Its database (`hydra_db`) has a separate user and volume, with no host port exposed.
+
+Hydra does not connect to `app_db`. The backend reads application users and communicates with Hydra through its Admin API. Each Compose project has its own network; they do not need a shared Docker network because the applications run on the host.
+
+For an existing checkout, run `docker compose -p poc-ory-hydra -f compose.app.yaml down --remove-orphans` once before `task setup` to stop the old containers under the original project name. Do not add `--volumes`. The App DB project explicitly reuses the `poc-ory-hydra_mysql-data` volume, preserving existing users and any old tables. Compose may warn that this volume belongs to the old project; its reuse is intentional. Hydra starts with a new database; previous clients, sessions, and tokens are not copied. Setup registers the clients again, and users must log in again. A fresh App DB contains only application tables.
 
 `task setup` creates or updates the Main App and Member App public OAuth clients and is safe to run again after changing their local configuration.
 
@@ -46,10 +53,22 @@ curl -X POST http://localhost:3000/auth/login \
   -d '{"loginChallenge":"from-hydra","phoneNumber":"0812345678","verificationCode":"123456"}'
 ```
 
-MySQL runs `docker/mysql/init.sql` only when its data volume is first created. Hydra creates and updates its own tables through the `hydra-migrate` service each time the stack starts. After changing Hydra configuration, run `docker compose restart hydra`.
+App MySQL runs `docker/mysql/init.sql` only when its data volume is first created. Hydra MySQL creates `hydra_db` and its database user through the MySQL image's environment variables; `hydra-migrate` creates and updates Hydra's tables before Hydra starts. All Hydra configuration is in `compose.hydra.yaml`, with no mounted configuration file. After changing it, run `task setup` again so Compose recreates the affected containers; a plain restart does not apply changed environment variables.
 
 ```bash
-docker compose down
+docker compose -f compose.hydra.yaml down
+docker compose -f compose.app.yaml down
 ```
 
 The committed credentials and secrets are for local development only.
+
+## ECS deployment reference
+
+`compose.hydra.yaml` is a local reference, not an ECS deployment file:
+
+- Map Hydra's image, command, and non-secret environment variables to an ECS Task Definition.
+- Use a separate database such as RDS instead of the local `hydra-mysql` container and volume.
+- Inject `DSN` from Secrets Manager into the migration and Hydra tasks, and `SECRETS_SYSTEM` into the Hydra task. Keep the system secret stable across deployments.
+- Run `hydra-migrate` as a one-off task and wait for successful completion before starting or updating the Hydra service; Compose's `depends_on` is not an ECS deployment workflow.
+- Remove `--dev`, use real HTTPS issuer/login/consent URLs, and configure trusted TLS termination for the load balancer.
+- Expose only the Public API to browsers. Keep the Admin API private and reachable only by authorized backend/setup tasks.

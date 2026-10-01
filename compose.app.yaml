@@ -1,0 +1,25 @@
+name: poc-app
+
+services:
+  app-mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: local-root-password
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: poc
+      MYSQL_PASSWORD: local-poc-password
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  mysql-data:
+    # Keep the existing volume name to preserve local app data.
+    name: poc-ory-hydra_mysql-data

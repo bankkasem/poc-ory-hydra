@@ -12,6 +12,8 @@
 
 ### Changed
 
+- แยก Compose ของ App DB และ Hydra เป็นคนละ MySQL server, user, volume และ network
+- รวม config ของ Hydra เป็น environment variables ใน `compose.hydra.yaml` สำหรับใช้อ้างอิง ECS
 - ย้าย Access/Refresh Token จาก MySQL ไป encrypted HttpOnly cookie แยกแต่ละแอป
 - ให้ Next.js BFF แลก Code และ Refresh Token โดยตรง พร้อมอัปเดต cookie หลัง rotation
 - คืน Backend เป็น Resource Server ที่ตรวจ Bearer Token ผ่าน `GET /me`

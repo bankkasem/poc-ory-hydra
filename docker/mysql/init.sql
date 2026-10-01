@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS hydra_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON hydra_db.* TO 'poc'@'%';
-
 CREATE TABLE IF NOT EXISTS app_db.users (
   id CHAR(36) NOT NULL,
   phone_number VARCHAR(20) NOT NULL,

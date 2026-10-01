@@ -6,8 +6,8 @@ tasks:
     cmds:
       - task: setup:env
       - bun install
-      - docker compose up -d --wait
-      - docker compose restart hydra
+      - docker compose -f compose.app.yaml up -d --wait
+      - docker compose -f compose.hydra.yaml up -d --wait
       - curl --retry 30 --retry-all-errors --retry-connrefused --retry-delay 1 --fail --silent --show-error http://127.0.0.1:4445/health/ready
       - task: setup:client
         vars: { APP: main-app }
@@ -79,5 +79,6 @@ tasks:
     desc: Rebuild the local stack from empty Docker volumes
     prompt: This deletes the local MySQL and Hydra data. Continue?
     cmds:
-      - docker compose down --volumes
+      - docker compose -f compose.hydra.yaml down --volumes
+      - docker compose -f compose.app.yaml down --volumes
       - task: setup

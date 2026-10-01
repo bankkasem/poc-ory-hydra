@@ -1,0 +1,59 @@
+name: poc-hydra
+
+services:
+  hydra-mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: local-hydra-root-password
+      MYSQL_DATABASE: hydra_db
+      MYSQL_USER: hydra
+      MYSQL_PASSWORD: local-hydra-password
+    volumes:
+      - hydra-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  hydra-migrate:
+    image: oryd/hydra:v26.2.0
+    command: migrate sql up -e --yes
+    environment:
+      DSN: mysql://hydra:local-hydra-password@tcp(hydra-mysql:3306)/hydra_db?parseTime=true
+    depends_on:
+      hydra-mysql:
+        condition: service_healthy
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v26.2.0
+    # Local only: remove --dev and configure HTTPS/TLS termination for ECS.
+    command: serve all --dev
+    environment:
+      # ECS: inject DSN and SECRETS_SYSTEM using Secrets Manager, not plaintext.
+      DSN: mysql://hydra:local-hydra-password@tcp(hydra-mysql:3306)/hydra_db?parseTime=true
+      SECRETS_SYSTEM: local-development-system-secret-change-me
+      URLS_SELF_ISSUER: http://localhost:4444
+      URLS_LOGIN: http://localhost:3001/login
+      URLS_CONSENT: http://localhost:3001/consent
+      SERVE_COOKIES_SAME_SITE_MODE: Lax
+      SERVE_PUBLIC_CORS_ENABLED: "true"
+      SERVE_PUBLIC_CORS_ALLOWED_ORIGINS: http://localhost:3002,http://localhost:3003
+      SERVE_PUBLIC_CORS_ALLOWED_METHODS: GET,POST,OPTIONS
+      SERVE_PUBLIC_CORS_ALLOWED_HEADERS: Authorization,Content-Type
+      STRATEGIES_ACCESS_TOKEN: opaque
+      TTL_REFRESH_TOKEN: 720h
+      OAUTH2_GRANT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD: 10s
+      OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: public
+    ports:
+      - "127.0.0.1:4444:4444"
+      # ECS: keep the Admin API private; do not route it through a public ALB.
+      - "127.0.0.1:4445:4445"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  hydra-mysql-data:
