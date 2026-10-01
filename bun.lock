@@ -6,6 +6,7 @@
       "name": "poc-ory-hydra",
       "devDependencies": {
         "@biomejs/biome": "2.5.14",
+        "agent-browser": "0.38.1",
       },
     },
     "apps/auth-app": {
@@ -20,7 +21,6 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
-        "agent-browser": "0.38.1",
         "typescript": "^5",
       },
     },

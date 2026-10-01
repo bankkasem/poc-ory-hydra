@@ -16,6 +16,7 @@
     "unrs-resolver"
   ],
   "devDependencies": {
-    "@biomejs/biome": "2.5.14"
+    "@biomejs/biome": "2.5.14",
+    "agent-browser": "0.38.1"
   }
 }
