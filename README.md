@@ -53,7 +53,7 @@ curl -X POST http://localhost:3000/auth/login \
   -d '{"loginChallenge":"from-hydra","phoneNumber":"0812345678","verificationCode":"123456"}'
 ```
 
-App MySQL runs `docker/mysql/init.sql` only when its data volume is first created. Hydra MySQL creates `hydra_db` and its database user through the MySQL image's environment variables; `hydra-migrate` creates and updates Hydra's tables before Hydra starts. All Hydra configuration is in `compose.hydra.yaml`, with no mounted configuration file. After changing it, run `task setup` again so Compose recreates the affected containers; a plain restart does not apply changed environment variables.
+App MySQL runs `database/init.sql` only when its data volume is first created. Hydra MySQL creates `hydra_db` and its database user through the MySQL image's environment variables; `hydra-migrate` creates and updates Hydra's tables before Hydra starts. All Hydra configuration is in `compose.hydra.yaml`, with no mounted configuration file. After changing it, run `task setup` again so Compose recreates the affected containers; a plain restart does not apply changed environment variables.
 
 ```bash
 docker compose -f compose.hydra.yaml down
