@@ -20,7 +20,7 @@ task setup
 bun run dev
 ```
 
-Auth App runs on <http://localhost:3000>, Main App on <http://localhost:3002>, Member App on <http://localhost:3003>, and the backend health check is available on <http://localhost:3001/health>.
+Auth App runs on <http://localhost:3001>, Main App on <http://localhost:3002>, Member App on <http://localhost:3003>, and the backend health check is available on <http://localhost:3000/health>.
 
 Hydra exposes its public API on <http://localhost:4444> and admin API on <http://localhost:4445>. MySQL listens on `localhost:3306` and contains separate `app_db` and `hydra_db` databases.
 
@@ -41,7 +41,7 @@ The local seed user is `0812345678` with verification code `123456`. The code is
 Verify the seed credentials through the backend:
 
 ```bash
-curl -X POST http://localhost:3001/auth/login \
+curl -X POST http://localhost:3000/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"loginChallenge":"from-hydra","phoneNumber":"0812345678","verificationCode":"123456"}'
 ```

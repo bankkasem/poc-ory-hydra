@@ -1,6 +1,6 @@
 import { authRoutes } from "./routes/auth";
 
-const port = Number(Bun.env.PORT ?? 3001);
+const port = Number(Bun.env.PORT ?? 3000);
 
 Bun.serve({
   port,

@@ -18,8 +18,8 @@ serve:
 urls:
   self:
     issuer: http://localhost:4444
-  login: http://localhost:3000/login
-  consent: http://localhost:3000/consent
+  login: http://localhost:3001/login
+  consent: http://localhost:3001/consent
 
 secrets:
   system:
